@@ -17,7 +17,7 @@ Le but est de l'intégrer le plus vite possible dans [Papillon](https://github.c
 - [x] Messagerie **(n'a pas l'air de fonctionner)**
 
 ## Requêtes
-Toutes les requètes doivent **au moins** contenir les 4 paramètres suivants :
+Un client doit faire la requête initiale `POST /generatetoken` avec le body suivant :
 | Paramètre | Utilité | Exemple |
 |--|--|--|
 | `url` | URL vers l'instance pronote **(avec le eleve.html)** | `https://0152054e.index-education.net/pronote/eleve.html` |
@@ -25,6 +25,9 @@ Toutes les requètes doivent **au moins** contenir les 4 paramètres suivants :
 | `password` | Mot de passe en clair | `azertyuiop12345` |
 | `ent` | Nom de l'ENT tel que listé [ici](https://github.com/bain3/pronotepy/blob/master/pronotepy/ent/ent.py) | `ac_rennes` |
 
+Le client doit ensuite garder le token généré. Si il ya eu un délai d'au moins 5 minutes entre deux interactions, le client doit regénérer un nouveau token.
+
+Ensuite chaque appel à une fonction de l'API doit avoir le paramètre `token` défini.
 Voici la liste des URLs pour obtenir des données :
 
 | URL | Utilité | Paramètres |
@@ -37,7 +40,7 @@ Voici la liste des URLs pour obtenir des données :
 | `/news` | Affiche les actualités |  |
 | `/messagerie` | Affiche les messages |  |
 
-Voici la liste des URL qui éffectuent une simple fonction
+Voici la liste des URL qui éffectuent une simple fonction :
 | URL | Utilité | Paramètres | Réponse
 |--|--|--|--|
 | `/export/ical` | Exporte le calendrier en iCal |  | *(l'url du fichier iCal)* |
