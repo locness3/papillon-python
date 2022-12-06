@@ -55,6 +55,8 @@ def generate_token(response, body=None):
             if not rk in body and rk != 'ent':
                 response.status = falcon.get_http_status(400)
                 return f'missing{rk}'
+
+        print(body)
         
         # remove ENT if not in body
         if 'ent' in body:
