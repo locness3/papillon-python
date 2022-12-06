@@ -12,10 +12,24 @@ from pronotepy.ent import *
 
 # ajouter les CORS sur toutes les routes
 @hug.response_middleware()
-def process_data(request, response, resource):
+def CORS(request, response, resource):
     response.set_header('Access-Control-Allow-Origin', '*')
-    response.set_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-    response.set_header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
+    response.set_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    response.set_header(
+        'Access-Control-Allow-Headers',
+        'Authorization,Keep-Alive,User-Agent,'
+        'If-Modified-Since,Cache-Control,Content-Type'
+    )
+    response.set_header(
+        'Access-Control-Expose-Headers',
+        'Authorization,Keep-Alive,User-Agent,'
+        'If-Modified-Since,Cache-Control,Content-Type'
+    )
+    if request.method == 'OPTIONS':
+        response.set_header('Access-Control-Max-Age', 1728000)
+        response.set_header('Content-Type', 'text/plain charset=UTF-8')
+        response.set_header('Content-Length', 0)
+        response.status_code = hug.HTTP_204
 
 # système de tokens
 saved_clients = {}
