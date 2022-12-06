@@ -92,7 +92,7 @@ def generate_token(response, body=None):
 
             error = {
                 "token": False,
-                "error": "servererror",
+                "error": e,
             }
             return error
         
