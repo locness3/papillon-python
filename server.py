@@ -55,7 +55,7 @@ def get_client(token: str) -> tuple[str, pronotepy.Client|None]:
 # token = POST /generatetoken body={url, username, password, ent}
 # GET * token=token
 @hug.post('/generatetoken')
-def generate_token(response, body=None):
+def generate_token(response, body=None, cors_middleware):
     if not body is None:
         for rk in ('url', 'username', 'password', 'ent'):
             if not rk in body and rk != 'ent':
