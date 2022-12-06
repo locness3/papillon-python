@@ -12,10 +12,10 @@ from pronotepy.ent import *
 
 # ajouter les CORS sur toutes les routes
 @hug.response_middleware()
-def add_cors(request, response, resource):
+def process_data(request, response, resource):
     response.set_header('Access-Control-Allow-Origin', '*')
     response.set_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-    response.set_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+    response.set_header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
 
 # système de tokens
 saved_clients = {}
@@ -57,8 +57,6 @@ def get_client(token: str) -> tuple[str, pronotepy.Client|None]:
 # GET * token=token
 @hug.post('/generatetoken')
 def generate_token(response, body=None):
-    response and response.set_header('Access-Control-Allow-Origin', '*')
-
     if not body is None:
         for rk in ('url', 'username', 'password', 'ent'):
             if not rk in body and rk != 'ent':
@@ -105,7 +103,6 @@ def generate_token(response, body=None):
 # donne les infos sur l'user
 @hug.get('/user')
 def user(token, response):
-    response and response.set_header('Access-Control-Allow-Origin', '*')
     success, client = get_client(token)
 
     if success == 'ok':
@@ -126,7 +123,6 @@ def user(token, response):
 ## renvoie l'emploi du temps
 @hug.get('/timetable')
 def timetable(token, dateString, response):
-    response and response.set_header('Access-Control-Allow-Origin', '*')
     dateToGet = datetime.datetime.strptime(dateString, "%Y-%m-%d")
     success, client = get_client(token)
 
