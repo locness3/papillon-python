@@ -56,9 +56,20 @@ def generate_token(response, body=None):
                 response.status = falcon.get_http_status(400)
                 return f'missing{rk}'
 
-        
-        client = pronotepy.Client(url=body['url'], username=body['username'], password=body['password'])
-           
+        try:
+           client = pronotepy.Client(url=body['url'], username=body['username'], password=body['password'])
+        except pronotepy.errors.InvalidCredentials:
+            response.status = falcon.get_http_status(498)
+            return 'invalidcredentials'
+        except pronotepy.errors.InvalidURL:
+            response.status = falcon.get_http_status(498)
+            return 'invalidurl'
+        except pronotepy.errors.InvalidResponse:
+            response.status = falcon.get_http_status(498)
+            return 'invalidresponse'
+        except pronotepy.errors.InvalidENT:
+            response.status = falcon.get_http_status(498)
+            return 'invalident'
         
         token = secrets.token_urlsafe(16)
 
