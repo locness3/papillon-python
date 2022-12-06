@@ -95,10 +95,27 @@ def generate_token(response, body=None):
 
         print(len(saved_clients), 'valid tokens')
 
-        return token
+        # if error return error
+        if client.logged_in:
+            tokenArray = {
+                "token": token,
+                "error": False
+            }
+            return tokenArray
+        else:
+            response.status = falcon.get_http_status(498)
+            error = {
+                "token": False,
+                "error": "loginfailed",
+            }
+            return error
     else:
         response.status = falcon.get_http_status(400)
-        return 'missingbody'
+        error = {
+            "token": False,
+            "error": "missingbody",
+        }
+        return error
 
 # donne les infos sur l'user
 @hug.get('/user')
