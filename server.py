@@ -81,10 +81,20 @@ def generate_token(response, body=None):
             elif not rk in body and rk == 'ent':
                 noENT = True 
 
-        if noENT:
-            client = pronotepy.Client(body['url'], username=body['username'], password=body['password'])
-        else:
-            client = pronotepy.Client(body['url'], username=body['username'], password=body['password'], ent=ent)
+        try:
+            if noENT:
+                client = pronotepy.Client(body['url'], username=body['username'], password=body['password'])
+            else:
+                client = pronotepy.Client(body['url'], username=body['username'], password=body['password'], ent=ent)
+        except Exception as e:
+            response.status = falcon.get_http_status(498)
+            print(e)
+
+            error = {
+                "token": False,
+                "error": "servererror",
+            }
+            return error
         
         token = secrets.token_urlsafe(16)
 
