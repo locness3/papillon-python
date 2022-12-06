@@ -51,20 +51,17 @@ def get_client(token: str) -> tuple[str, pronotepy.Client|None]:
 @hug.post('/generatetoken')
 def generate_token(response, body=None):
     if not body is None:
-        noneENT = False
-
         for rk in ('url', 'username', 'password', 'ent'):
             if not rk in body and rk != 'ent':
                 response.status = falcon.get_http_status(400)
                 return f'missing{rk}'
-            elif not rk in body and rk == 'ent':
-                noneENT = True
-
-        ent = None
-        if not noneENT:
-            ent = getattr(pronotepy.ent, body['ent'])
-                
-        client = pronotepy.Client(body['url'], username=body['username'], password=body['password'], ent=ent)
+        
+        # remove ENT if not in body
+        if 'ent' in body:
+            client = pronotepy.Client(body['url'], username=body['username'], password=body['password'], ent=getattr(pronotepy.ent, body['ent']))
+        else:
+            client = pronotepy.Client(body['url'], username=body['username'], password=body['password'])
+        
         token = secrets.token_urlsafe(16)
 
         saved_clients[token] = {
