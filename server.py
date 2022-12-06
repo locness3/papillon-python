@@ -11,8 +11,10 @@ from hug.middleware import CORSMiddleware
 # importe les ENT
 from pronotepy.ent import
 
-api = hug.API(__name__)
-api.http.add_middleware(CORSMiddleware(api))
+# configuration CORS
+@hug.directive()
+def cors_middleware():
+    return CORSMiddleware(hug.API(__name__), max_age=600, allow_headers=['Content-Type', 'Authorization'])
 
 # système de tokens
 saved_clients = {}
