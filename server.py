@@ -10,7 +10,7 @@ import falcon
 # importe les ENT
 from pronotepy.ent import
 
-# ajouter les CORS pour éviter les erreurs de CORS
+# ajouter les CORS sur toutes les routes
 @hug.response_middleware()
 def add_cors(request, response, resource):
     response.set_header('Access-Control-Allow-Origin', '*')
@@ -95,6 +95,7 @@ def generate_token(response, body=None):
 
         print(len(saved_clients), 'valid tokens')
 
+        response.set_header('Access-Control-Allow-Origin', '*')
         return token
     else:
         response.status = falcon.get_http_status(400)
