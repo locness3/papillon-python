@@ -57,7 +57,7 @@ def generate_token(response, body=None):
                 return f'missing{rk}'
 
         
-        client = pronotepy.Client(body['url'], username=body['username'], password=body['password'])
+        client = pronotepy.Client(url=body['url'], username=body['username'], password=body['password'])
            
         
         token = secrets.token_urlsafe(16)
