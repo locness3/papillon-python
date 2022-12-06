@@ -8,7 +8,7 @@ import secrets
 import falcon
 
 # importe les ENT
-from pronotepy.ent import
+from pronotepy.ent import *
 
 # ajouter les CORS sur toutes les routes
 @hug.response_middleware()
@@ -57,6 +57,8 @@ def get_client(token: str) -> tuple[str, pronotepy.Client|None]:
 # GET * token=token
 @hug.post('/generatetoken')
 def generate_token(response, body=None):
+    response and response.set_header('Access-Control-Allow-Origin', '*')
+
     if not body is None:
         for rk in ('url', 'username', 'password', 'ent'):
             if not rk in body and rk != 'ent':
@@ -69,7 +71,7 @@ def generate_token(response, body=None):
         if body['ent'] is None:
             ent = None
         else:
-            ent=getattr(pronotepy.ent, body['ent']))
+            ent=getattr(pronotepy.ent, body['ent'])
 
         try:
            client = pronotepy.Client(url=body['url'], username=body['username'], password=body['password'], ent=ent)
@@ -95,7 +97,6 @@ def generate_token(response, body=None):
 
         print(len(saved_clients), 'valid tokens')
 
-        response.set_header('Access-Control-Allow-Origin', '*')
         return token
     else:
         response.status = falcon.get_http_status(400)
@@ -104,6 +105,7 @@ def generate_token(response, body=None):
 # donne les infos sur l'user
 @hug.get('/user')
 def user(token, response):
+    response and response.set_header('Access-Control-Allow-Origin', '*')
     success, client = get_client(token)
 
     if success == 'ok':
@@ -124,6 +126,7 @@ def user(token, response):
 ## renvoie l'emploi du temps
 @hug.get('/timetable')
 def timetable(token, dateString, response):
+    response and response.set_header('Access-Control-Allow-Origin', '*')
     dateToGet = datetime.datetime.strptime(dateString, "%Y-%m-%d")
     success, client = get_client(token)
 
