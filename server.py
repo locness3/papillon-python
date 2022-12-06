@@ -82,9 +82,9 @@ def generate_token(response, body=None):
                 noENT = True 
 
         if noENT:
-            client = pronotepy.Client(url=body['url'], username=body['username'], password=body['password'])
+            client = pronotepy.Client(body['url'], username=body['username'], password=body['password'])
         else:
-            client = pronotepy.Client(url=body['url'], username=body['username'], password=body['password'], ent=ent)
+            client = pronotepy.Client(body['url'], username=body['username'], password=body['password'], ent=ent)
         
         token = secrets.token_urlsafe(16)
 
