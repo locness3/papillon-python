@@ -56,13 +56,9 @@ def generate_token(response, body=None):
                 response.status = falcon.get_http_status(400)
                 return f'missing{rk}'
 
-        print(body)
         
-        # remove ENT if not in body
-        if 'ent' in body:
-            client = pronotepy.Client(body['url'], username=body['username'], password=body['password'], ent=getattr(pronotepy.ent, body['ent']))
-        else:
-            client = pronotepy.Client(body['url'], username=body['username'], password=body['password'])
+        client = pronotepy.Client(body['url'], username=body['username'], password=body['password'])
+           
         
         token = secrets.token_urlsafe(16)
 
