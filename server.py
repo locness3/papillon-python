@@ -78,7 +78,7 @@ def generate_token(response, body=None):
                 return f'missing{rk}'    
 
         try:
-           if body['ent'] is None:
+            if body['ent'] is None:
                 client = pronotepy.Client(url=body['url'], username=body['username'], password=body['password'])
             else:
                 client = pronotepy.Client(url=body['url'], username=body['username'], password=body['password'], ent=ent)
