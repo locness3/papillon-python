@@ -20,10 +20,10 @@ Le but est de l'intégrer le plus vite possible dans [Papillon](https://github.c
 Un client doit faire la requête initiale `POST /generatetoken` avec le body suivant :
 | Paramètre | Utilité | Exemple |
 |--|--|--|
-| `url` | URL vers l'instance pronote **(avec le eleve.html)** | `https://0152054e.index-education.net/pronote/eleve.html` |
-| `username` | Nom d'utilisateur **PRONOTE** | `l.martin` |
-| `password` | Mot de passe en clair | `azertyuiop12345` |
-| `ent` | Nom de l'ENT tel que listé [ici](https://github.com/bain3/pronotepy/blob/master/pronotepy/ent/ent.py) | `ac_rennes` |
+| `url: str(url)` | URL vers l'instance pronote **(avec le eleve.html)** | `https://0152054e.index-education.net/pronote/eleve.html` |
+| `username: str` | Nom d'utilisateur **PRONOTE** | `l.martin` |
+| `password: str` | Mot de passe en clair | `azertyuiop12345` |
+| `ent: str(ent)` | Nom de l'ENT tel que listé [ici](https://github.com/bain3/pronotepy/blob/master/pronotepy/ent/ent.py) | `ac_rennes` |
 
 Le client doit ensuite garder le token généré. Si il ya eu un délai d'au moins 5 minutes entre deux interactions, le client doit regénérer un nouveau token.
 
@@ -33,8 +33,8 @@ Voici la liste des URLs pour obtenir des données :
 | URL | Utilité | Paramètres |
 |--|--|--|
 | `/user` | Obtient les infos sur l'utilisateur (nom, classe...) |  |
-| `/timetable` | Affiche l'emploi du temps sur une date donnée | `dateString` : date au format **`année-mois-jour`** |
-| `/homework` | Affiche les devoirs entre deux dates données | `dateFrom` : date de début au format **`année-mois-jour`**, et `dateTo` date de fin au même format |
+| `/timetable` | Affiche l'emploi du temps sur une date donnée | `dateString: str` : date au format **`année-mois-jour`** |
+| `/homework` | Affiche les devoirs entre deux dates données | `dateFrom: str` : date de début au format **`année-mois-jour`**, et `dateTo: str` : date de fin au même format |
 | `/grades` | Affiche les notes |  |
 | `/absences` | Affiche les absences |  |
 | `/news` | Affiche les actualités |  |
@@ -44,4 +44,4 @@ Voici la liste des URL qui éffectuent une simple fonction :
 | URL | Utilité | Paramètres | Réponse
 |--|--|--|--|
 | `/export/ical` | Exporte le calendrier en iCal |  | *(l'url du fichier iCal)* |
-| `/homework/setAsDone` **(ne fonctionne pas)** | Change l'état d'un devoir (fait/non fait) | `dateFrom` : date de début au format **`année-mois-jour`**, et `dateTo` date de fin au même format, et `homeworkId` l'id du devoir à changer | *(état du devoir changé)* |
+| `/homework/setAsDone` **(ne fonctionne pas)** | Change l'état d'un devoir (fait/non fait) | `dateFrom: str` : date de début au format **`année-mois-jour`**, et `dateTo: str` date de fin au même format, et `homeworkId: int` l'id du devoir à changer | *(état du devoir changé)* |
