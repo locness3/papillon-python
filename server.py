@@ -6,9 +6,13 @@ import datetime
 import time
 import secrets
 import falcon
+from hug.middleware import CORSMiddleware
 
 # importe les ENT
-from pronotepy.ent import *
+from pronotepy.ent import
+
+api = hug.API(__name__)
+api.http.add_middleware(CORSMiddleware(api))
 
 # système de tokens
 saved_clients = {}
