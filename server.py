@@ -6,15 +6,16 @@ import datetime
 import time
 import secrets
 import falcon
-from hug.middleware import CORSMiddleware
 
 # importe les ENT
 from pronotepy.ent import
 
-# configuration CORS
-@hug.directive()
-def cors_middleware():
-    return CORSMiddleware(hug.API(__name__), max_age=600, allow_headers=['Content-Type', 'Authorization'])
+# ajouter les CORS pour éviter les erreurs de CORS
+@hug.response_middleware()
+def add_cors(request, response, resource):
+    response.set_header('Access-Control-Allow-Origin', '*')
+    response.set_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    response.set_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
 
 # système de tokens
 saved_clients = {}
@@ -55,7 +56,7 @@ def get_client(token: str) -> tuple[str, pronotepy.Client|None]:
 # token = POST /generatetoken body={url, username, password, ent}
 # GET * token=token
 @hug.post('/generatetoken')
-def generate_token(response, body=None, cors_middleware):
+def generate_token(response, body=None):
     if not body is None:
         for rk in ('url', 'username', 'password', 'ent'):
             if not rk in body and rk != 'ent':
