@@ -332,6 +332,7 @@ def discussions(token, response):
                     "author": message.author,
                     "date": message.date.strftime("%Y-%m-%d %H:%M"),
                     "seen": message.seen,
+                    "html_content": news._raw_content
                 })
 
             discussionData = {
