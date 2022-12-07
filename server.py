@@ -338,7 +338,7 @@ def discussions(token, response):
                 "id": discussion.id,
                 "subject": discussion.subject,
                 "creator": discussion.creator,
-                "date": discussion.creation_date.strftime("%Y-%m-%d %H:%M"),
+                "date": discussion.date.strftime("%Y-%m-%d %H:%M"),
                 "messages": messages
             }
 
