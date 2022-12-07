@@ -38,7 +38,7 @@ Voici la liste des URLs pour obtenir des données :
 | `/grades` | Affiche les notes |  |
 | `/absences` | Affiche les absences |  |
 | `/news` | Affiche les actualités |  |
-| `/messagerie` | Affiche les messages |  |
+| `/discussions` | Affiche les messages |  |
 
 Voici la liste des URL qui éffectuent une simple fonction :
 | URL | Utilité | Paramètres | Réponse
