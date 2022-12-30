@@ -151,7 +151,7 @@ def user(token, response):
 ## renvoie l'emploi du temps
 @hug.get('/timetable')
 def timetable(token, dateString, response):
-    dateToGet = datetime.datetime.strptime(dateString, "%Y-%m-%d")
+    dateToGet = datetime.datetime.strptime(dateString, "%Y-%m-%d").date()
     success, client = get_client(token)
 
     if success == 'ok':
@@ -165,7 +165,7 @@ def timetable(token, dateString, response):
                     "subject": {
                         "id": lesson.subject.id,
                         "name": lesson.subject.name,
-                        "group": lesson.subject.group
+                        "groups": lesson.subject.groups
                     },
                     "teacher": lesson.teacher_name,
                     "room": lesson.classroom,
