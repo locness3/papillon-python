@@ -6,9 +6,13 @@ import datetime
 import time
 import secrets
 import falcon
+import json
 
 # importe les ENT
 from pronotepy.ent import *
+
+API_VERSION = open('VERSION', 'r').read().strip()
+ENT_LIST = json.load(open('ent_list.json', 'r', encoding='utf8'))
 
 # ajouter les CORS sur toutes les routes
 @hug.response_middleware()
@@ -64,6 +68,15 @@ def get_client(token: str) -> tuple[str, pronotepy.Client|None]:
             return 'expired', None
     else:
         return 'notfound', None
+
+@hug.get('/infos')
+def infos():
+    return {
+        'status': 'ok',
+        'message': 'server is running',
+        'version': API_VERSION,
+        'ent_list': ENT_LIST
+    }
 
 # requête initiale :
 # un client doit faire
