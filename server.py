@@ -139,7 +139,8 @@ def user(token, response):
                 "class": client.info.class_name,
                 "establishment": client.info.establishment,
                 "phone": client.info.phone,
-                "profile_picture": client.info.profile_picture.url
+                "profile_picture": client.info.profile_picture.url,
+                "delegue": client.info.delegue
             }
 
             return userData
@@ -161,7 +162,11 @@ def timetable(token, dateString, response):
             for lesson in lessons:
                 lessonData = {
                     "id": lesson.id,
-                    "subject": lesson.subject.name,
+                    "subject": {
+                        "id": lesson.subject.id,
+                        "name": lesson.subject.name,
+                        "group": lesson.subject.group
+                    },
                     "teacher": lesson.teacher_name,
                     "room": lesson.classroom,
                     "start": lesson.start.strftime("%Y-%m-%d %H:%M"),
@@ -169,7 +174,12 @@ def timetable(token, dateString, response):
                     "background_color": lesson.background_color,
                     "status": lesson.status,
                     "is_cancelled": lesson.canceled,
+                    "outing": lesson.outing,
+                    "detention": lesson.detention,
+                    "exempted": lesson.exempted,
+                    "test": lesson.test,
                     "group_name": lesson.group_name,
+                    "virtual": lesson.virtual_classrooms,
                 }
                 lessonsData.append(lessonData)
 
@@ -197,12 +207,17 @@ def homework(token, dateFrom, dateTo, response):
                     files.append({
                         "id": file.id,
                         "name": file.name,
-                        "url": file.url
+                        "url": file.url,
+                        "type": file.type
                     })
 
                 homeworkData = {
                     "id": homework.id,
-                    "subject": homework.subject.name,
+                    "subject": {
+                        "id": homework.subject.id,
+                        "name": homework.subject.name,
+                        "groups": homework.subject.groups,
+                    },
                     "description": homework.description,
                     "background_color": homework.background_color,
                     "done": homework.done,
@@ -226,8 +241,15 @@ def grades(token, response):
         for grade in allGrades:
             gradeData = {
                 "id": grade.id,
-                "subject": grade.subject.name,
+                "subject": {
+                    "id": grade.subject.id,
+                    "name": grade.subject.name,
+                    "groups": grade.subject.groups,
+                },
                 "date": grade.date.strftime("%Y-%m-%d %H:%M"),
+                "description": grade.comment,
+                "is_bonus": grade.is_bonus,
+                "is_optional": grade.is_optionnal,
                 "grade": {
                     "value": grade.grade,
                     "out_of": grade.out_of,
@@ -245,7 +267,11 @@ def grades(token, response):
         allAverages = client.current_period.averages
         for average in allAverages:
             averageData = {
-                "subject": average.subject.name,
+                "subject": {
+                    "id": average.subject.id,
+                    "name": average.subject.name,
+                    "groups": average.subject.groups,
+                },
                 "average": average.student,
                 "class_average": average.class_average,
                 "max": average.max,
@@ -266,9 +292,9 @@ def grades(token, response):
         response.status = falcon.get_http_status(498)
         return success
 
-## renvoie les absences (NE FONCTIONNE PAS)
+## renvoie les absences
 @hug.get('/absences')
-def grades(token, response):
+def absences(token, response):
     success, client = get_client(token)
     if success == 'ok':
         allAbsences = client.current_period.absences
@@ -290,6 +316,73 @@ def grades(token, response):
         response.status = falcon.get_http_status(498)
         return success
 
+@hug.get('/punishments')
+def punishments(token, response):
+    success, client = get_client(token)
+    if success == 'ok':
+        allPunishments = client.current_period.punishments
+        punishmentsData = []
+        for punishment in allPunishments:
+            homeworkDocs = []
+            if punishment.homework_documents is not None:
+                for homeworkDoc in punishment.homework_documents:
+                    homeworkDocs.append({
+                        "id": homeworkDoc.id,
+                        "name": homeworkDoc.name,
+                        "url": homeworkDoc.url,
+                        "type": homeworkDoc.type
+                    })
+
+            circumstanceDocs = []
+            if punishment.circumstance_documents is not None:
+                for circumstanceDoc in punishment.circumstance_documents:
+                    circumstanceDocs.append({
+                        "id": circumstanceDoc.id,
+                        "name": circumstanceDoc.name,
+                        "url": circumstanceDoc.url,
+                        "type": circumstanceDoc.type
+                    })
+
+            schedules = []
+            if punishment.schedule is not None:
+                for schedule in punishment.schedule:
+                    schedules.append({
+                        "id": schedule.id,
+                        "start": schedule.start.strftime("%Y-%m-%d %H:%M"),
+                        "duration": schedule.duration,
+                        "end": (schedule.start + datetime.timedelta(minutes=schedule.duration)).strftime("%Y-%m-%d %H:%M"),
+                    })
+
+            punishmentData = {
+                "id": punishment.id,
+                "schedulable": punishment.schedulable,
+                "schedule": {
+                    
+                },
+                "date": punishment.given.strftime("%Y-%m-%d %H:%M"),
+                "given_by": punishment.giver,
+                "exclusion": punishment.exclusion,
+                "during_lesson": punishment.during_lesson,
+                "homework": {
+                    "text": punishment.homework,
+                    "documents": homeworkDocs,
+                },
+                "reason": {
+                    "text": punishment.reasons,
+                    "circumstances": punishment.circumstances,
+                    "documents": circumstanceDocs,
+                },
+                "nature": punishment.nature,
+                "duration": punishment.duration
+            }
+
+            punishmentsData.append(punishmentData)
+
+        return punishmentsData
+    else:
+        response.status = falcon.get_http_status(498)
+        return success
+
 @hug.get('/news')
 def news(token, response):
     success, client = get_client(token)
@@ -298,14 +391,27 @@ def news(token, response):
 
         newsAllData = []
         for news in allNews:
+            attachments = []
+            if news.attachments is not None:
+                for attachment in news.attachments:
+                    attachments.append({
+                        "id": attachment.id,
+                        "name": attachment.name,
+                        "url": attachment.url,
+                        "type": attachment.type
+                    })
+
             newsData = {
                 "id": news.id,
                 "title": news.title,
                 "date": news.creation_date.strftime("%Y-%m-%d %H:%M"),
                 "category": news.category,
+                "read": news.read,
                 "survey": news.survey,
+                "anonymous_survey": news.anonymous_response,
                 "author": news.author,
                 "content": news.content,
+                "attachments": attachments,
                 "html_content": news._raw_content
             }
 
@@ -336,15 +442,130 @@ def discussions(token, response):
 
             discussionData = {
                 "id": discussion.id,
-                "subject": discussion.subject,
+                "subject": {
+                    "id": discussion.subject.id,
+                    "name": discussion.subject.name,
+                    "groups": discussion.subject.groups,
+                },
                 "creator": discussion.creator,
                 "date": discussion.date.strftime("%Y-%m-%d %H:%M"),
+                "unread": discussion.unread,
+                "closed": discussion.close,
                 "messages": messages
             }
 
             discussionsAllData.append(discussionData)
 
         return discussionsAllData
+    else:
+        response.status = falcon.get_http_status(498)
+        return success
+
+# Renvoie les évaluations
+@hug.get('/evaluations')
+def evaluations(token, response):
+    success, client = get_client(token)
+    if success == 'ok':
+        allEvaluations = client.current_period.evaluations
+
+        evaluationsAllData = []
+        for evaluation in allEvaluations:
+            acquisitions = []
+            if evaluation.acquisitions is not None:
+                for acquisition in evaluation.acquisitions:
+                    acquisitions.append({
+                        "id": acquisition.id,
+                        "name": acquisition.name,
+                        "coefficient": acquisition.coefficient,
+                        "abbreviation": acquisition.abbreviation,
+                        "domain": acquisition.domain,
+                        "level": acquisition.level
+                    })
+
+            evaluationData = {
+                "id": evaluation.id,
+                "subject": {
+                    "id": evaluation.subject.id,
+                    "name": evaluation.subject.name,
+                    "groups": evaluation.subject.groups,
+                },
+                "name": evaluation.name,
+                "description": evaluation.description,
+                "teacher": evaluation.teacher,
+                "date": evaluation.date.strftime("%Y-%m-%d %H:%M"),
+                "paliers": evaluation.paliers,
+                "coefficient": evaluation.coefficient,
+                "acquisitions": acquisitions,
+            }
+
+            evaluationsAllData.append(evaluationData)
+
+        return evaluationsAllData
+    else:
+        response.status = falcon.get_http_status(498)
+        return success
+
+def __getMealFood(meal):
+    if meal is None:
+        return None
+    else:
+        foods = []
+        for food in meal:
+            foods.append({
+                        "name": food.name,
+                        "labels": __getFoodLabels(food.labels),
+                    })
+        return foods
+
+def __getFoodLabels(labels):
+    if labels is None:
+        return None
+    else:
+        foodLabels = []
+        for label in labels:
+            foodLabels.append({
+                "id": label.id,
+                "name": label.name,
+                "color": label.color,
+            })
+        return foodLabels
+
+@hug.get('/menu')
+def menu(token, dateFrom, dateTo, response):
+    dateFrom = datetime.datetime.strptime(dateFrom, "%Y-%m-%d").date()
+    dateTo = datetime.datetime.strptime(dateTo, "%Y-%m-%d").date()
+    success, client = get_client(token)
+    if success == 'ok':
+        allMenus = client.menus(date_from=dateFrom, date_to=dateTo)
+
+        menusAllData = []
+        for menu in allMenus:
+            cheese = __getMealFood(menu.cheese)
+            dessert = __getMealFood(menu.dessert)
+            other_meal = __getMealFood(menu.other_meal)
+            side_meal = __getMealFood(menu.side_meal)
+            main_meal = __getMealFood(menu.main_meal)
+            first_meal = __getMealFood(menu.first_meal)
+
+            menuData = {
+                "id": menu.id,
+                "name": menu.name,
+                "date": menu.date.strftime("%Y-%m-%d"),
+                "type": {
+                    "is_lunch": menu.is_lunch,
+                    "is_dinner": menu.is_dinner,
+                },
+                "first_meal": first_meal,
+                "dessert": dessert,
+                "cheese": cheese,
+                "other_meal": other_meal,
+                "side_meal": side_meal,
+                "main_meal": main_meal,
+            }
+
+            menusAllData.append(menuData)
+
+        return menusAllData
     else:
         response.status = falcon.get_http_status(498)
         return success
