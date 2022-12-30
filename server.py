@@ -183,7 +183,6 @@ def timetable(token, dateString, response):
                 }
                 lessonsData.append(lessonData)
 
-            print(lessonsData)
             return lessonsData
     else:
         response.status = falcon.get_http_status(498)
