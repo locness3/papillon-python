@@ -41,7 +41,7 @@ saved_clients ->
 """
 client_timeout_threshold = 300 # le temps en sec avant qu'un jeton ne soit rendu invalide
 
-def get_client(token: str) -> tuple[str, pronotepy.Client|None]:
+def get_client(token: str): #-> tuple[str, pronotepy.Client|None]:
     """Retourne le client Pronote associé au jeton.
 
     Args:
@@ -442,11 +442,7 @@ def discussions(token, response):
 
             discussionData = {
                 "id": discussion.id,
-                "subject": {
-                    "id": discussion.subject.id,
-                    "name": discussion.subject.name,
-                    "groups": discussion.subject.groups,
-                },
+                "subject": discussion.subject,
                 "creator": discussion.creator,
                 "date": discussion.date.strftime("%Y-%m-%d %H:%M"),
                 "unread": discussion.unread,
