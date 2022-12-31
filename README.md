@@ -10,11 +10,11 @@ Le but est de l'intégrer le plus vite possible dans [Papillon](https://github.c
 - [x] Emploi du temps
 - [x] Travail à faire
 - [x] Notes
-- [ ] Compétences
-- [ ] Fichiers
-- [x] Actualités **(ne contient pas les pièces jointes)**
+- [x] Compétences
+- [x] Actualités
 - [x] Absences et retards
-- [x] Messagerie **(n'a pas l'air de fonctionner)**
+- [x] Messagerie
+  - [ ] Envoi de message
 
 ## Requêtes
 Un client doit faire la requête initiale `POST /generatetoken` avec le body suivant :
@@ -36,12 +36,16 @@ Voici la liste des URLs pour obtenir des données :
 | `/timetable` | Affiche l'emploi du temps sur une date donnée | `dateString: str` : date au format **`année-mois-jour`** |
 | `/homework` | Affiche les devoirs entre deux dates données | `dateFrom: str` : date de début au format **`année-mois-jour`**, et `dateTo: str` : date de fin au même format |
 | `/grades` | Affiche les notes |  |
+| `/evaluations` | Affiche les évaluations par compétences |  |
 | `/absences` | Affiche les absences |  |
+| `/punishments` | Affiche les punitions |  |
 | `/news` | Affiche les actualités |  |
 | `/discussions` | Affiche les messages |  |
+| `/menu` | Affiche les menus entre deux dates données | `dateFrom: str` : date de début au format **`année-mois-jour`**, et `dateTo: str` : date de fin au même format |
 
 Voici la liste des URL qui éffectuent une simple fonction :
 | URL | Utilité | Paramètres | Réponse
 |--|--|--|--|
+| `/info` | Envoie des informations sur l'API comme les ENTs et la version |  |  |
 | `/export/ical` | Exporte le calendrier en iCal |  | *(l'url du fichier iCal)* |
 | `/homework/setAsDone` **(ne fonctionne pas)** | Change l'état d'un devoir (fait/non fait) | `dateFrom: str` : date de début au format **`année-mois-jour`**, et `dateTo: str` date de fin au même format, et `homeworkId: int` l'id du devoir à changer | *(état du devoir changé)* |
