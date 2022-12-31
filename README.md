@@ -53,4 +53,4 @@ Voici la liste des URL qui éffectuent une simple fonction :
 | `/discussion/delete` | Supprime la discussion | `discussionId: str` : Id de la discussion | `ok` si aucun problème |
 | `/discussion/readState` | Change l'état de lecture d'une discussion | `discussionId: str` : Id de la discussion | `ok` si aucun problème |
 | `/discussion/reply` | Répond à une discussion | `discussionId: str` : Id de la discussion, et `content: str` : Contenu du message | `ok` si aucun problème |
-| `/discussion/create` | Crée une discussion | `recipientId: str` : Id du destinataire, et `content: str` : Contenu du message | `ok` si aucun problème |
+| `/discussion/create` | Crée une discussion | `recipientId: str` : Id du destinataire, `content: str` : Contenu du message et `recipients: list` : La liste de destinataire avec leurs ID (obtenu avec `/recipients`) | `ok` si aucun problème |
