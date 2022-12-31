@@ -243,6 +243,33 @@ def homework(token, dateFrom, dateTo, response):
         response.status = falcon.get_http_status(498)
         return success
 
+# Traitements des notes (Non Rendu, Absent, etc.)
+def __getGradeState(grade_value:str, significant = False)->int:
+    if significant:
+        grade_translate = [
+            "Absent", # Absent (1)
+            "Dispense", # Dispensé (2)
+            "NonNote", # Non Noté (3)
+            "Inapte", # Inapte (4)
+            "NonRendu", # Non Rendu (5)
+            "AbsentZero", # Absent avec 0 (6)
+            "NonRenduZero", # Non Rendu avec 0 (7)
+            "Felicitations", # Félicitations (8)
+        ]
+        try:
+            int(grade_value[0])
+            return 0
+        except ValueError:
+            return grade_translate.index(grade_value) + 1
+    else:
+        try:
+            if grade_value == "":
+                return "-1"
+            int(grade_value[0])
+            return grade_value
+        except ValueError:
+            return "-1"
+
 ## renvoie les notes
 @hug.get('/grades')
 def grades(token, response):
@@ -262,13 +289,15 @@ def grades(token, response):
                 "description": grade.comment,
                 "is_bonus": grade.is_bonus,
                 "is_optional": grade.is_optionnal,
+                "is_out_of_20": grade.is_out_of_20,
                 "grade": {
-                    "value": grade.grade,
+                    "value": __getGradeState(grade.grade),
                     "out_of": grade.out_of,
                     "coefficient": grade.coefficient,
-                    "average": grade.average,
-                    "max": grade.max,
-                    "min": grade.min,
+                    "average": __getGradeState(grade.average),
+                    "max": __getGradeState(grade.max),
+                    "min": __getGradeState(grade.min),
+                    "significant": __getGradeState(grade.grade, True),
                 }
             }
 
@@ -610,4 +639,3 @@ def homework_setAsDone(token, dateFrom, dateTo, homeworkId, response):
     else:
         response.status = falcon.get_http_status(498)
         return success
-    
