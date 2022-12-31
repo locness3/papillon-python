@@ -147,13 +147,24 @@ def user(token, response):
 
     if success == 'ok':
         if client.logged_in:
+            periods = []
+            for period in client.periods:
+                periods.append({
+                    'start': period.start.strftime('%Y-%m-%d'),
+                    'end': period.end.strftime('%Y-%m-%d'),
+                    'name': period.name,
+                    'id': period.id,
+                    'actual': client.current_period.id == period.id
+                })
+
             userData = {
                 "name": client.info.name,
                 "class": client.info.class_name,
                 "establishment": client.info.establishment,
                 "phone": client.info.phone,
                 "profile_picture": client.info.profile_picture.url,
-                "delegue": client.info.delegue
+                "delegue": client.info.delegue,
+                "periods": periods
             }
 
             return userData
@@ -175,6 +186,7 @@ def timetable(token, dateString, response):
             for lesson in lessons:
                 lessonData = {
                     "id": lesson.id,
+                    "num": lesson.num,
                     "subject": {
                         "id": lesson.subject.id,
                         "name": lesson.subject.name,
@@ -244,7 +256,7 @@ def homework(token, dateFrom, dateTo, response):
         return success
 
 # Traitements des notes (Non Rendu, Absent, etc.)
-def __getGradeState(grade_value:str, significant = False)->int:
+def __getGradeState(grade_value:str, significant:bool = False) -> int|str :
     if significant:
         grade_translate = [
             "Absent", # Absent (1)
@@ -488,12 +500,116 @@ def discussions(token, response):
                 "date": discussion.date.strftime("%Y-%m-%d %H:%M"),
                 "unread": discussion.unread,
                 "closed": discussion.close,
-                "messages": messages
+                "replyable": discussion.replyable,
+                "messages": messages,
             }
 
             discussionsAllData.append(discussionData)
 
         return discussionsAllData
+    else:
+        response.status = falcon.get_http_status(498)
+        return success
+
+@hug.post('/discussion/delete')
+def deleteDiscussion(token, discussionId, response):
+    success, client = get_client(token)
+    if success == 'ok':
+        try:
+            allDiscussions = client.discussions()
+            for discussion in allDiscussions:
+                if discussion.id == discussionId:
+                    discussion.delete()
+                    return 'ok'
+                else:
+                    response.status = falcon.get_http_status(404)
+                    return 'not found'
+        except:
+            response.status = falcon.get_http_status(500)
+            return 'error'
+    else:
+        response.status = falcon.get_http_status(498)
+        return success
+
+@hug.post('/discussion/readState')
+def readDiscussion(token, discussionId, response):
+    success, client = get_client(token)
+    if success == 'ok':
+        try:
+            allDiscussions = client.discussions()
+            for discussion in allDiscussions:
+                if discussion.id == discussionId:
+                    if discussion.unread == 0: discussion.mark_as(False)
+                    else: discussion.mark_as(True)
+                    return 'ok'
+                else:
+                    response.status = falcon.get_http_status(404)
+                    return 'not found'
+        except:
+            response.status = falcon.get_http_status(500)
+            return 'error'
+    else:
+        response.status = falcon.get_http_status(498)
+        return success
+
+@hug.post('/discussion/reply')
+def replyDiscussion(token, discussionId, content, response):
+    success, client = get_client(token)
+    if success == 'ok':
+        try:
+            allDiscussions = client.discussions()
+            for discussion in allDiscussions:
+                if discussion.id == discussionId:
+                    if discussion.replyable:
+                        discussion.reply(content)
+                        return 'ok'
+                    else:
+                        response.status = falcon.get_http_status(403)
+                        return 'not replyable'
+                else:
+                    response.status = falcon.get_http_status(404)
+                    return 'not found'
+        except:
+            response.status = falcon.get_http_status(500)
+            return 'error'
+    else:
+        response.status = falcon.get_http_status(498)
+        return success
+
+@hug.get('/recipients')
+def recipients(token, response):
+    success, client = get_client(token)
+    if success == 'ok':
+        allRecipients = client.get_recipients()
+
+        recipientsAllData = []
+        for recipient in allRecipients:
+            recipientData = {
+                "id": recipient.id,
+                "name": recipient.name,
+                "type": recipient.type,
+                "email": recipient.email,
+                "functions": recipient.functions,
+                "with_discussion": recipient.with_discussion
+            }
+
+            recipientsAllData.append(recipientData)
+        
+        return recipientsAllData
+    else:
+        response.status = falcon.get_http_status(498)
+        return success
+
+@hug.post('/discussion/create')
+def createDiscussion(token, subject, content, recipients, response):
+    success, client = get_client(token)
+    if success == 'ok':
+        try:
+            client.new_discussion(subject, content, recipients)
+            return 'ok'
+        except:            
+            response.status = falcon.get_http_status(500)
+            return 'error'
     else:
         response.status = falcon.get_http_status(498)
         return success
@@ -618,7 +734,7 @@ def export_ical(token, response):
         response.status = falcon.get_http_status(498)
         return success
 
-@hug.get('/homework/setAsDone')
+@hug.post('/homework/changeState')
 def homework_setAsDone(token, dateFrom, dateTo, homeworkId, response):
     dateFrom = datetime.datetime.strptime(dateFrom, "%Y-%m-%d").date()
     dateTo = datetime.datetime.strptime(dateTo, "%Y-%m-%d").date()
@@ -626,16 +742,19 @@ def homework_setAsDone(token, dateFrom, dateTo, homeworkId, response):
 
     if success == 'ok':
         if client.logged_in:
-            homeworks = client.homework(date_from=dateFrom, date_to=dateTo)
-
-            incr = 0
-
-            for homework in homeworks:
-                if incr == homeworkId:
-                    print(homework)
-                    homework.set_done(False)
-
-                incr += 1
+            try:
+                homeworks = client.homework(date_from=dateFrom, date_to=dateTo)
+                for homework in homeworks:
+                    if homework.id == homeworkId:
+                        if homework.done: homework.set_done(False)
+                        else: homework.set_done(True)
+                        return 'ok'
+                    else:
+                        response.status = falcon.get_http_status(404)
+                        return 'not found'
+            except:
+                response.status = falcon.get_http_status(500)
+                return 'error'
     else:
         response.status = falcon.get_http_status(498)
         return success
