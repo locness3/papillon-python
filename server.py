@@ -282,6 +282,12 @@ def __getGradeState(grade_value:str, significant:bool = False) -> int|str :
         except ValueError:
             return "-1"
 
+def transformToNumber(value:str)->float|int:
+    try:
+        return int(value)
+    except ValueError:
+        return float(value.replace(",", "."))
+
 ## renvoie les notes
 @hug.get('/grades')
 def grades(token, response):
@@ -303,13 +309,13 @@ def grades(token, response):
                 "is_optional": grade.is_optionnal,
                 "is_out_of_20": grade.is_out_of_20,
                 "grade": {
-                    "value": __getGradeState(grade.grade),
-                    "out_of": grade.out_of,
-                    "coefficient": grade.coefficient,
-                    "average": __getGradeState(grade.average),
-                    "max": __getGradeState(grade.max),
-                    "min": __getGradeState(grade.min),
-                    "significant": __getGradeState(grade.grade, True),
+                    "value": transformToNumber(__getGradeState(grade.grade)),
+                    "out_of": transformToNumber(grade.out_of),
+                    "coefficient": transformToNumber(grade.coefficient),
+                    "average": transformToNumber(__getGradeState(grade.average)),
+                    "max": transformToNumber(__getGradeState(grade.max)),
+                    "min": transformToNumber(__getGradeState(grade.min)),
+                    "significant": transformToNumber(__getGradeState(grade.grade, True)),
                 }
             }
 
