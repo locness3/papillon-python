@@ -192,19 +192,20 @@ def timetable(token, dateString, response):
                         "name": lesson.subject.name,
                         "groups": lesson.subject.groups
                     },
-                    "teacher": lesson.teacher_name,
-                    "room": lesson.classroom,
+                    "teachers": lesson.teacher_names,
+                    "rooms": lesson.classrooms,
+                    "group_names": lesson.group_names,
+                    "memo": lesson.memo,
+                    "virtual": lesson.virtual_classrooms,
                     "start": lesson.start.strftime("%Y-%m-%d %H:%M"),
                     "end": lesson.end.strftime("%Y-%m-%d %H:%M"),
                     "background_color": lesson.background_color,
                     "status": lesson.status,
                     "is_cancelled": lesson.canceled,
-                    "outing": lesson.outing,
-                    "detention": lesson.detention,
-                    "exempted": lesson.exempted,
-                    "test": lesson.test,
-                    "group_name": lesson.group_name,
-                    "virtual": lesson.virtual_classrooms,
+                    "is_outing": lesson.outing,
+                    "is_detention": lesson.detention,
+                    "is_exempted": lesson.exempted,
+                    "is_test": lesson.test,
                 }
                 lessonsData.append(lessonData)
 
