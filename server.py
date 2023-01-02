@@ -316,7 +316,7 @@ def grades(token, response):
                     "average": transformToNumber(__getGradeState(grade.average)),
                     "max": transformToNumber(__getGradeState(grade.max)),
                     "min": transformToNumber(__getGradeState(grade.min)),
-                    "significant": transformToNumber(__getGradeState(grade.grade, True)),
+                    "significant": __getGradeState(grade.grade, True),
                 }
             }
 
@@ -332,11 +332,12 @@ def grades(token, response):
                     "name": average.subject.name,
                     "groups": average.subject.groups,
                 },
-                "average": average.student,
-                "class_average": average.class_average,
-                "max": average.max,
-                "min": average.min,
-                "out_of": average.out_of,
+                "average": transformToNumber(__getGradeState(average.student)),
+                "class_average": transformToNumber(__getGradeState(average.class_average)),
+                "max": transformToNumber(__getGradeState(average.max)),
+                "min": transformToNumber(__getGradeState(average.min)),
+                "out_of": transformToNumber(__getGradeState(average.out_of)),
+                "significant": __getGradeState(average.student, True),
             }
 
             averagesData.append(averageData)
@@ -344,7 +345,7 @@ def grades(token, response):
         gradeReturn = {
             "grades": gradesData,
             "averages": averagesData,
-            "overall_average": client.current_period.overall_average,
+            "overall_average": transformToNumber(__getGradeState(client.current_period.overall_average)),
         }
 
         return gradeReturn
