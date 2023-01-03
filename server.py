@@ -195,7 +195,7 @@ def timetable(token, dateString, response):
                     "teachers": lesson.teacher_names,
                     "rooms": lesson.classrooms,
                     "group_names": lesson.group_names,
-                    # "memo": lesson.memo,
+                    "memo": lesson.memo,
                     "virtual": lesson.virtual_classrooms,
                     "start": lesson.start.strftime("%Y-%m-%d %H:%M"),
                     "end": lesson.end.strftime("%Y-%m-%d %H:%M"),
