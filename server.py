@@ -270,7 +270,8 @@ def __getGradeState(grade_value:str, significant:bool = False) -> int|str :
             "Felicitations", # Félicitations (8)
         ]
         try:
-            int(grade_value[0])
+            if not grade_value == "":
+                int(grade_value[0])
             return 0
         except ValueError:
             return grade_translate.index(grade_value) + 1
