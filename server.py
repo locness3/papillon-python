@@ -197,9 +197,8 @@ def __getCurrentPeriod(client, wantSpecificPeriod: bool = False, specificPeriod:
             for period in client.periods:
                 if period.name == specificPeriod:
                     return period
-                else:
-                    print("WARN: Couldn't find specific period name")
-                    return __getCurrentPeriod(client, False, None)
+            print("WARN: Couldn't find specific period name")
+            return __getCurrentPeriod(client, False, None)
 
 @hug.post('/changePeriod')
 def changePeriod(token, response, periodName):
