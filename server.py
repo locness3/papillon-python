@@ -407,6 +407,7 @@ def grades(token, response):
 
             averagesData.append(averageData)
 
+        print(client.calculated_period.overall_average)
         gradeReturn = {
             "grades": gradesData,
             "averages": averagesData,
