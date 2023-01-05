@@ -332,23 +332,23 @@ def __getGradeState(grade_value:str, significant:bool = False) -> int|str :
             "AbsentZero", # Absent avec 0 (6)
             "NonRenduZero", # Non Rendu avec 0 (7)
             "Felicitations", # Félicitations (8)
+            "" # Vide (9)
         ]
         try:
-            if not grade_value == "":
-                int(grade_value[0])
+            int(grade_value[0])
             return 0
         except ValueError:
+            if grade_value == "":
+                return -1
             return grade_translate.index(grade_value) + 1
     else:
         try:
-            if grade_value == "":
-                return "-1"
             int(grade_value[0])
             return grade_value
         except ValueError:
             return "-1"
 
-def transformToNumber(value:str)->float|int:
+def __transformToNumber(value:str)->float|int:
     try:
         return int(value)
     except ValueError:
@@ -375,12 +375,12 @@ def grades(token, response):
                 "is_optional": grade.is_optionnal,
                 "is_out_of_20": grade.is_out_of_20,
                 "grade": {
-                    "value": transformToNumber(__getGradeState(grade.grade)),
-                    "out_of": transformToNumber(grade.out_of),
-                    "coefficient": transformToNumber(grade.coefficient),
-                    "average": transformToNumber(__getGradeState(grade.average)),
-                    "max": transformToNumber(__getGradeState(grade.max)),
-                    "min": transformToNumber(__getGradeState(grade.min)),
+                    "value": __transformToNumber(__getGradeState(grade.grade)),
+                    "out_of": __transformToNumber(grade.out_of),
+                    "coefficient": __transformToNumber(grade.coefficient),
+                    "average": __transformToNumber(__getGradeState(grade.average)),
+                    "max": __transformToNumber(__getGradeState(grade.max)),
+                    "min": __transformToNumber(__getGradeState(grade.min)),
                     "significant": __getGradeState(grade.grade, True),
                 }
             }
@@ -397,11 +397,11 @@ def grades(token, response):
                     "name": average.subject.name,
                     "groups": average.subject.groups,
                 },
-                "average": transformToNumber(__getGradeState(average.student)),
-                "class_average": transformToNumber(__getGradeState(average.class_average)),
-                "max": transformToNumber(__getGradeState(average.max)),
-                "min": transformToNumber(__getGradeState(average.min)),
-                "out_of": transformToNumber(__getGradeState(average.out_of)),
+                "average": __transformToNumber(__getGradeState(average.student)),
+                "class_average": __transformToNumber(__getGradeState(average.class_average)),
+                "max": __transformToNumber(__getGradeState(average.max)),
+                "min": __transformToNumber(__getGradeState(average.min)),
+                "out_of": __transformToNumber(__getGradeState(average.out_of)),
                 "significant": __getGradeState(average.student, True),
             }
 
@@ -410,7 +410,7 @@ def grades(token, response):
         gradeReturn = {
             "grades": gradesData,
             "averages": averagesData,
-            "overall_average": transformToNumber(__getGradeState(client.calculated_period.overall_average)),
+            "overall_average": __transformToNumber(__getGradeState(client.calculated_period.overall_average)),
         }
 
         return gradeReturn
