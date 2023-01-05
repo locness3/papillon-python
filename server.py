@@ -322,6 +322,7 @@ def homework(token, dateFrom, dateTo, response):
 
 # Traitements des notes (Non Rendu, Absent, etc.)
 def __getGradeState(grade_value:str, significant:bool = False) -> int|str :
+    grade_value = str(grade_value)
     if significant:
         grade_translate = [
             "Absent", # Absent (1)
@@ -407,7 +408,6 @@ def grades(token, response):
 
             averagesData.append(averageData)
 
-        print(client.calculated_period.overall_average)
         gradeReturn = {
             "grades": gradesData,
             "averages": averagesData,
