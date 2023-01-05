@@ -83,7 +83,7 @@ def infos():
 # token = POST /generatetoken body={url, username, password, ent}
 # GET * token=token
 @hug.post('/generatetoken')
-def generate_token(response, body=None, method: hug.types.one_of(['url', 'qrcode'])='url'):
+def generate_token(response, body=None, method: hug.types.one_of(['url', 'qrcode'])='url', periodName=None):
     if not body is None:
         noENT = False
 
@@ -139,7 +139,10 @@ def generate_token(response, body=None, method: hug.types.one_of(['url', 'qrcode
         token = secrets.token_urlsafe(16)
 
         # Set current period
-        client.calculated_period = getCurrentPeriod(client)
+        if periodName is not None:
+            client.calculated_period = getCurrentPeriod(client, True, periodName)
+        else:
+            client.calculated_period = getCurrentPeriod(client)
 
         saved_clients[token] = {
             'client': client,
