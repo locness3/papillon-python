@@ -83,7 +83,7 @@ def infos():
 # token = POST /generatetoken body={url, username, password, ent}
 # GET * token=token
 @hug.post('/generatetoken')
-def generate_token(response, body=None, method: hug.types.one_of(['url', 'qrcode'])='url', periodName=None):
+def generate_token(response, body=None, method: hug.types.one_of(['url', 'qrcode'])='url'):
     if not body is None:
         noENT = False
 
@@ -139,10 +139,7 @@ def generate_token(response, body=None, method: hug.types.one_of(['url', 'qrcode
         token = secrets.token_urlsafe(16)
 
         # Set current period
-        if periodName is not None:
-            client.calculated_period = getCurrentPeriod(client, True, periodName)
-        else:
-            client.calculated_period = getCurrentPeriod(client)
+        client.calculated_period = __getCurrentPeriod(client)
 
         saved_clients[token] = {
             'client': client,
@@ -175,7 +172,7 @@ def generate_token(response, body=None, method: hug.types.one_of(['url', 'qrcode
 
 # TODO: METTRE A JOUR CETTE PARTIE SI DES PROBLEMES APPARAISSENT
 # Peut poser problème avec certains établissements
-def getCurrentPeriod(client, wantSpecificPeriod: bool = False, specificPeriod: str = None):
+def __getCurrentPeriod(client, wantSpecificPeriod: bool = False, specificPeriod: str = None):
     if client.logged_in:
         if not wantSpecificPeriod:
             CURRENT_PERIOD_NAME = client.current_period.name.split(' ')[0]
@@ -202,7 +199,29 @@ def getCurrentPeriod(client, wantSpecificPeriod: bool = False, specificPeriod: s
                     return period
                 else:
                     print("WARN: Couldn't find specific period name")
-                    return getCurrentPeriod(client, False, None)
+                    return __getCurrentPeriod(client, False, None)
+
+@hug.post('/changePeriod')
+def changePeriod(token, response, periodName):
+    success, client = get_client(token)
+
+    if success == 'ok':
+        if client.logged_in:
+            try:
+                client.calculated_period = __getCurrentPeriod(client, True, periodName)
+                return {
+                    'status': 'ok',
+                    'period': client.calculated_period.name
+                }
+            except Exception as e:
+                response.status = falcon.get_http_status(498)
+                return {
+                    'status': 'error',
+                    'message': str(e)
+                }
+    else:
+        response.status = falcon.get_http_status(498)
+        return success
 
 # donne les infos sur l'user
 @hug.get('/user')
