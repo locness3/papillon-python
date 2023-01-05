@@ -138,6 +138,9 @@ def generate_token(response, body=None, method: hug.types.one_of(['url', 'qrcode
         
         token = secrets.token_urlsafe(16)
 
+        # Set current period
+        client.calculated_period = getCurrentPeriod(client)
+
         saved_clients[token] = {
             'client': client,
             'last_interaction': time.time()
@@ -167,6 +170,37 @@ def generate_token(response, body=None, method: hug.types.one_of(['url', 'qrcode
         }
         return error
 
+# TODO: METTRE A JOUR CETTE PARTIE SI DES PROBLEMES APPARAISSENT
+# Peut poser problème avec certains établissements
+def getCurrentPeriod(client, wantSpecificPeriod: bool = False, specificPeriod: str = None):
+    if client.logged_in:
+        if not wantSpecificPeriod:
+            CURRENT_PERIOD_NAME = client.current_period.name.split(' ')[0]
+            if CURRENT_PERIOD_NAME == 'Trimestre':
+                CURRENT_PERIOD_NAME = 'Trimestre'
+            elif CURRENT_PERIOD_NAME == 'Semestre':
+                CURRENT_PERIOD_NAME = 'Semestre'
+            elif CURRENT_PERIOD_NAME == 'Année':
+                CURRENT_PERIOD_NAME = 'Année'
+            else:
+                print("WARN: Couldn't find current period name")
+                return client.current_period
+
+            for period in client.periods:
+                if period.name.split(' ')[0] == CURRENT_PERIOD_NAME:
+                    
+                    raw = datetime.datetime.now().date()
+                    now = datetime.datetime(raw.year, raw.month, raw.day)
+                    if period.start <= now <= period.end:
+                        return period
+        else:
+            for period in client.periods:
+                if period.name == specificPeriod:
+                    return period
+                else:
+                    print("WARN: Couldn't find specific period name")
+                    return getCurrentPeriod(client, False, None)
+
 # donne les infos sur l'user
 @hug.get('/user')
 def user(token, response):
@@ -181,7 +215,7 @@ def user(token, response):
                     'end': period.end.strftime('%Y-%m-%d'),
                     'name': period.name,
                     'id': period.id,
-                    'actual': client.current_period.id == period.id
+                    'actual': client.calculated_period.id == period.id
                 })
 
             userData = {
@@ -322,7 +356,7 @@ def transformToNumber(value:str)->float|int:
 def grades(token, response):
     success, client = get_client(token)
     if success == 'ok':
-        allGrades = client.current_period.grades
+        allGrades = client.calculated_period.grades
         gradesData = []
         for grade in allGrades:
             gradeData = {
@@ -352,7 +386,7 @@ def grades(token, response):
 
         averagesData = []
 
-        allAverages = client.current_period.averages
+        allAverages = client.calculated_period.averages
         for average in allAverages:
             averageData = {
                 "subject": {
@@ -373,7 +407,7 @@ def grades(token, response):
         gradeReturn = {
             "grades": gradesData,
             "averages": averagesData,
-            "overall_average": transformToNumber(__getGradeState(client.current_period.overall_average)),
+            "overall_average": transformToNumber(__getGradeState(client.calculated_period.overall_average)),
         }
 
         return gradeReturn
@@ -386,7 +420,7 @@ def grades(token, response):
 def absences(token, response):
     success, client = get_client(token)
     if success == 'ok':
-        allAbsences = client.current_period.absences
+        allAbsences = client.calculated_period.absences
         absencesData = []
         for absence in allAbsences:
             absenceData = {
@@ -409,7 +443,7 @@ def absences(token, response):
 def punishments(token, response):
     success, client = get_client(token)
     if success == 'ok':
-        allPunishments = client.current_period.punishments
+        allPunishments = client.calculated_period.punishments
         punishmentsData = []
         for punishment in allPunishments:
             homeworkDocs = []
@@ -655,7 +689,7 @@ def createDiscussion(token, subject, content, recipients, response):
 def evaluations(token, response):
     success, client = get_client(token)
     if success == 'ok':
-        allEvaluations = client.current_period.evaluations
+        allEvaluations = client.calculated_period.evaluations
 
         evaluationsAllData = []
         for evaluation in allEvaluations:
