@@ -83,31 +83,58 @@ def infos():
 # token = POST /generatetoken body={url, username, password, ent}
 # GET * token=token
 @hug.post('/generatetoken')
-def generate_token(response, body=None):
+def generate_token(response, body=None, method: hug.types.one_of(['url', 'qrcode'])='url'):
     if not body is None:
         noENT = False
 
-        for rk in ('url', 'username', 'password', 'ent'):
-            if not rk in body and rk != 'ent':
-                response.status = falcon.get_http_status(400)
-                return f'missing{rk}'   
-            elif not rk in body and rk == 'ent':
-                noENT = True 
+        if method == "url":
+            for rk in ('url', 'username', 'password', 'ent'):
+                if not rk in body and rk != 'ent':
+                    response.status = falcon.get_http_status(400)
+                    return f'missing{rk}'   
+                elif not rk in body and rk == 'ent':
+                    noENT = True 
 
-        try:
-            if noENT:
-                client = pronotepy.Client(body['url'], username=body['username'], password=body['password'])
-            else:
-                client = pronotepy.Client(body['url'], username=body['username'], password=body['password'], ent=getattr(pronotepy.ent, body['ent']))
-        except Exception as e:
-            response.status = falcon.get_http_status(498)
-            print(e)
+            try:
+                if noENT:
+                    client = pronotepy.Client(body['url'], username=body['username'], password=body['password'])
+                else:
+                    client = pronotepy.Client(body['url'], username=body['username'], password=body['password'], ent=getattr(pronotepy.ent, body['ent']))
+            except Exception as e:
+                response.status = falcon.get_http_status(498)
+                print(e)
 
-            error = {
-                "token": False,
-                "error": str(e),
-            }
-            return error
+                error = {
+                    "token": False,
+                    "error": str(e),
+                }
+                return error
+
+        elif method == "qrcode":
+            for rk in ('url', 'qrToken', 'login', 'checkCode'):
+                if not rk in body:
+                    response.status = falcon.get_http_status(400)
+                    return f'missing{rk}'
+                elif rk == "checkCode":
+                    if len(body["checkCode"]) != 4:
+                        response.status = falcon.get_http_status(400)
+                        return f'checkCode must be 4 characters long (got {len(body["checkCode"])})'
+
+            try:
+                client = pronotepy.Client.qrcode_login(qr_code={
+                    "jeton": body['qrToken'],
+                    "login": body['login'],
+                    "url": body['url']
+                }, pin=body['checkCode'])
+            except Exception as e:
+                response.status = falcon.get_http_status(498)
+                print(e)
+
+                error = {
+                    "token": False,
+                    "error": str(e),
+                }
+                return error
         
         token = secrets.token_urlsafe(16)
 
