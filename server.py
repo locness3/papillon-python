@@ -356,7 +356,7 @@ def __getGradeState(grade_value:str, significant:bool = False) -> int|str :
         try:
             int(grade_value[0])
             return 0
-        except ValueError:
+        except (ValueError, IndexError):
             if grade_value == "":
                 return -1
             return grade_translate.index(grade_value) + 1
@@ -364,7 +364,7 @@ def __getGradeState(grade_value:str, significant:bool = False) -> int|str :
         try:
             int(grade_value[0])
             return grade_value
-        except ValueError:
+        except (ValueError, IndexError):
             return "-1"
 
 def __transformToNumber(value:str)->float|int:
