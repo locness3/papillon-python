@@ -844,9 +844,9 @@ def homework_setAsDone(token, dateFrom, dateTo, homeworkId, response):
                         else: homework.set_done(True)
                         changed = True
                         return 'ok'
-                    if not changed:
-                        response.status = falcon.get_http_status(404)
-                        return 'not found'
+                if not changed:
+                    response.status = falcon.get_http_status(404)
+                    return 'not found'
             except:
                 response.status = falcon.get_http_status(500)
                 return 'error'
