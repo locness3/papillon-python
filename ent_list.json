@@ -35,6 +35,7 @@
       "name": "Académie de Rennes (Toutatice)",
       "url": "www.toutatice.fr",
       "py": "ac_rennes"
+      "educonnect": true
     },
     {
       "name": "Académie de Toulouse (Mon ENT Occitanie)",
