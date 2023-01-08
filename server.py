@@ -270,9 +270,9 @@ def timetable(token, dateString, response):
                     "id": lesson.id,
                     "num": lesson.num,
                     "subject": {
-                        "id": lesson.subject.id,
-                        "name": lesson.subject.name,
-                        "groups": lesson.subject.groups
+                        "id": lesson.subject.id if lesson.subject is not None else "0",
+                        "name": lesson.subject.name if lesson.subject is not None else "",
+                        "groups": lesson.subject.groups if lesson.subject is not None else False
                     },
                     "teachers": lesson.teacher_names,
                     "rooms": lesson.classrooms,
