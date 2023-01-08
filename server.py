@@ -838,10 +838,15 @@ def homework_setAsDone(token, dateFrom, dateTo, homeworkId, response):
                 homeworks = client.homework(date_from=dateFrom, date_to=dateTo)
                 
                 for homework in homeworks:
+                    changed = False
                     if homework.id == homeworkId:
                         if homework.done: homework.set_done(False)
                         else: homework.set_done(True)
+                        changed = True
                         return 'ok'
+                    if not changed:
+                        response.status = falcon.get_http_status(404)
+                        return 'not found'
             except:
                 response.status = falcon.get_http_status(500)
                 return 'error'
