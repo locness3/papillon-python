@@ -836,14 +836,19 @@ def homework_setAsDone(token, dateFrom, dateTo, homeworkId, response):
         if client.logged_in:
             try:
                 homeworks = client.homework(date_from=dateFrom, date_to=dateTo)
+                
+                tries = 0
                 for homework in homeworks:
                     if homework.id == homeworkId:
                         if homework.done: homework.set_done(False)
                         else: homework.set_done(True)
                         return 'ok'
-                    else:
+                    
+                    if tries == homeworks.length:
                         response.status = falcon.get_http_status(404)
                         return 'not found'
+                    
+                    tries = tries + 1
             except:
                 response.status = falcon.get_http_status(500)
                 return 'error'
