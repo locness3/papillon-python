@@ -34,7 +34,7 @@
     {
       "name": "Académie de Rennes (Toutatice)",
       "url": "www.toutatice.fr",
-      "py": "ac_rennes"
+      "py": "ac_rennes",
       "educonnect": true
     },
     {
