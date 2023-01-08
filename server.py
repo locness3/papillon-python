@@ -287,7 +287,7 @@ def timetable(token, dateString, response):
                     "is_outing": lesson.outing,
                     "is_detention": lesson.detention,
                     "is_exempted": lesson.exempted,
-                    "is_test": lesson.test
+                    "is_test": lesson.test,
                 }
                 lessonsData.append(lessonData)
 
