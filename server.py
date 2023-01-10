@@ -140,6 +140,7 @@ def generate_token(response, body=None, method: hug.types.one_of(['url', 'qrcode
 
         # Set current period
         client.calculated_period = __getCurrentPeriod(client)
+        client.activated_period = __getCurrentPeriod(client, False, None, True)
 
         saved_clients[token] = {
             'client': client,
@@ -172,7 +173,7 @@ def generate_token(response, body=None, method: hug.types.one_of(['url', 'qrcode
 
 # TODO: METTRE A JOUR CETTE PARTIE SI DES PROBLEMES APPARAISSENT
 # Peut poser problème avec certains établissements
-def __getCurrentPeriod(client, wantSpecificPeriod: bool = False, specificPeriod: str = None):
+def __getCurrentPeriod(client, wantSpecificPeriod: bool = False, specificPeriod: str = None, wantAllPeriods: bool = False):
     if client.logged_in:
         if not wantSpecificPeriod:
             CURRENT_PERIOD_NAME = client.current_period.name.split(' ')[0]
@@ -185,14 +186,21 @@ def __getCurrentPeriod(client, wantSpecificPeriod: bool = False, specificPeriod:
             else:
                 print("WARN: Couldn't find current period name")
                 return client.current_period
+            
+            if wantAllPeriods: allPeriods = []
 
             for period in client.periods:
                 if period.name.split(' ')[0] == CURRENT_PERIOD_NAME:
                     
-                    raw = datetime.datetime.now().date()
-                    now = datetime.datetime(raw.year, raw.month, raw.day)
-                    if period.start <= now <= period.end:
-                        return period
+                    if not wantAllPeriods:   
+                        raw = datetime.datetime.now().date()
+                        now = datetime.datetime(raw.year, raw.month, raw.day)
+                        if period.start <= now <= period.end:
+                            return period
+                    else:
+                        allPeriods.append(period)
+            
+            return allPeriods
         else:
             for period in client.periods:
                 if period.name == specificPeriod:
@@ -439,10 +447,14 @@ def grades(token, response):
 
 ## renvoie les absences
 @hug.get('/absences')
-def absences(token, response):
+def absences(token, response, allPeriods=True):
     success, client = get_client(token)
     if success == 'ok':
-        allAbsences = client.calculated_period.absences
+        if allPeriods:
+            allAbsences = [absence for period in client.activated_period for absence in period.absences]
+        else:
+            allAbsences = client.calculated_period.absences
+
         absencesData = []
         for absence in allAbsences:
             absenceData = {
@@ -462,10 +474,14 @@ def absences(token, response):
         return success
 
 @hug.get('/punishments')
-def punishments(token, response):
+def punishments(token, response, allPeriods: bool = True):
     success, client = get_client(token)
     if success == 'ok':
-        allPunishments = client.calculated_period.punishments
+        if allPeriods:
+            allPunishments = [punishment for period in client.activated_period for punishment in period.punishments]
+        else:
+            allPunishments = client.calculated_period.punishments
+        
         punishmentsData = []
         for punishment in allPunishments:
             homeworkDocs = []
