@@ -102,6 +102,7 @@ def generate_token(response, body=None, method: hug.types.one_of(['url', 'qrcode
                     client = pronotepy.Client(body['url'], username=body['username'], password=body['password'], ent=getattr(pronotepy.ent, body['ent']))
             except Exception as e:
                 response.status = falcon.get_http_status(498)
+                print(f"Error while trying to connect to {body['url']}")
                 print(e)
 
                 error = {
