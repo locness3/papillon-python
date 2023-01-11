@@ -122,11 +122,11 @@ def generate_token(response, body=None, method: hug.types.one_of(['url', 'qrcode
                         return f'checkCode must be 4 characters long (got {len(body["checkCode"])})'
 
             try:
-                client = pronotepy.Client.qrcode_login(qr_code={
+                client = pronotepy.Client.qrcode_login({
                     "jeton": body['qrToken'],
                     "login": body['login'],
                     "url": body['url']
-                }, pin=body['checkCode'])
+                }, body['checkCode'])
             except Exception as e:
                 response.status = falcon.get_http_status(498)
                 print(e)
@@ -512,15 +512,12 @@ def punishments(token, response, allPeriods: bool = True):
                         "id": schedule.id,
                         "start": schedule.start.strftime("%Y-%m-%d %H:%M"),
                         "duration": schedule.duration,
-                        "end": (schedule.start + datetime.timedelta(minutes=schedule.duration)).strftime("%Y-%m-%d %H:%M"),
                     })
 
             punishmentData = {
                 "id": punishment.id,
                 "schedulable": punishment.schedulable,
-                "schedule": {
-                    
-                },
+                "schedule": schedules,
                 "date": punishment.given.strftime("%Y-%m-%d %H:%M"),
                 "given_by": punishment.giver,
                 "exclusion": punishment.exclusion,
