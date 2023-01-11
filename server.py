@@ -473,6 +473,33 @@ def absences(token, response, allPeriods=True):
     else:
         response.status = falcon.get_http_status(498)
         return success
+    
+@hug.get('/delays')
+def delays(token, response, allPeriods: bool = True):
+    success, client = get_client(token)
+    if success == 'ok':
+        if allPeriods:
+            allDelays = [delay for period in client.activated_period for delay in period.delays]
+        else:
+            allDelays = client.calculated_period.delays
+        
+        delaysData = []
+        for delay in allDelays:
+            delayData = {
+                "id": delay.id,
+                "date": delay.date.strftime("%Y-%m-%d %H:%M"),
+                "duration": delay.minutes,
+                "justified": delay.justified,
+                "justification": delay.justification,
+                "reasons": delay.reasons,
+            }
+
+            delaysData.append(delayData)
+
+        return delaysData
+    else:
+        response.status = falcon.get_http_status(498)
+        return success
 
 @hug.get('/punishments')
 def punishments(token, response, allPeriods: bool = True):
