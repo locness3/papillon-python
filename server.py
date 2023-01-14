@@ -630,7 +630,7 @@ def discussions(token, response):
                 "id": discussion.id,
                 "subject": discussion.subject,
                 "creator": discussion.creator,
-                "date": discussion.date.strftime("%Y-%m-%d %H:%M"),
+                "date": discussion.date,
                 "unread": discussion.unread,
                 "closed": discussion.close,
                 "replyable": discussion.replyable,
