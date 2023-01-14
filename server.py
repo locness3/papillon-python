@@ -622,7 +622,7 @@ def discussions(token, response):
                     "id": message.id,
                     "content": message.content,
                     "author": message.author,
-                    "date": message.date.strftime("%Y-%m-%d %H:%M"),
+                    "date": message.date,
                     "seen": message.seen
                 })
 
