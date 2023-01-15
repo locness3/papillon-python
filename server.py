@@ -439,6 +439,7 @@ def grades(token, response):
             "grades": gradesData,
             "averages": averagesData,
             "overall_average": __transformToNumber(__getGradeState(client.calculated_period.overall_average)),
+            "class_overall_average": __transformToNumber(__getGradeState(client.calculated_period.class_overall_average)),
         }
 
         return gradeReturn
