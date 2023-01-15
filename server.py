@@ -623,7 +623,7 @@ def discussions(token, response):
                     "id": message.id,
                     "content": message.content,
                     "author": message.author,
-                    "date": message.date,
+                    "date": message.date.strftime("%Y-%m-%d %H:%M") if message.date is not None else None,
                     "seen": message.seen
                 })
 
@@ -631,7 +631,8 @@ def discussions(token, response):
                 "id": discussion.id,
                 "subject": discussion.subject,
                 "creator": discussion.creator,
-                "date": discussion.date,
+                "participants": discussion.participants,
+                "date": discussion.date.strftime("%Y-%m-%d %H:%M") if discussion.date is not None else None,
                 "unread": discussion.unread,
                 "closed": discussion.close,
                 "replyable": discussion.replyable,
