@@ -12,7 +12,7 @@ import json
 from pronotepy.ent import *
 
 API_VERSION = open('VERSION', 'r').read().strip()
-ENT_LIST = json.load(open('ent_list.json', 'r', encoding='utf8'))
+EMS_LIST = json.load(open('ems_list.json', 'r', encoding='utf8'))
 
 # ajouter les CORS sur toutes les routes
 @hug.response_middleware()
@@ -33,7 +33,7 @@ def CORS(request, response, resource):
         response.set_header('Access-Control-Max-Age', 1728000)
         response.set_header('Content-Type', 'text/plain charset=UTF-8')
         response.set_header('Content-Length', 0)
-        response.status_code = hug.HTTP_204
+        response.status_code = falcon.get_http_status(204)
 
 # système de tokens
 saved_clients = {}
@@ -75,7 +75,7 @@ def infos():
         'status': 'ok',
         'message': 'server is running',
         'version': API_VERSION,
-        'ent_list': ENT_LIST
+        'ent_list': EMS_LIST
     }
 
 # requête initiale :
@@ -140,8 +140,8 @@ def generate_token(response, body=None, method: hug.types.one_of(['url', 'qrcode
         token = secrets.token_urlsafe(16)
 
         # Set current period
-        client.calculated_period = __getCurrentPeriod(client)
-        client.activated_period = __getCurrentPeriod(client, False, None, True)
+        client.calculated_period = __get_current_period(client)
+        client.activated_period = __get_current_period(client, False, None, True)
 
         saved_clients[token] = {
             'client': client,
@@ -174,7 +174,7 @@ def generate_token(response, body=None, method: hug.types.one_of(['url', 'qrcode
 
 # TODO: METTRE A JOUR CETTE PARTIE SI DES PROBLEMES APPARAISSENT
 # Peut poser problème avec certains établissements
-def __getCurrentPeriod(client, wantSpecificPeriod: bool = False, specificPeriod: str = None, wantAllPeriods: bool = False):
+def __get_current_period(client, wantSpecificPeriod: bool = False, specificPeriod: str = None, wantAllPeriods: bool = False):
     if client.logged_in:
         if not wantSpecificPeriod:
             CURRENT_PERIOD_NAME = client.current_period.name.split(' ')[0]
@@ -207,16 +207,16 @@ def __getCurrentPeriod(client, wantSpecificPeriod: bool = False, specificPeriod:
                 if period.name == specificPeriod:
                     return period
             print("WARN: Couldn't find specific period name")
-            return __getCurrentPeriod(client, False, None)
+            return __get_current_period(client, False, None)
 
 @hug.post('/changePeriod')
-def changePeriod(token, response, periodName):
+def change_period(token, response, periodName):
     success, client = get_client(token)
 
     if success == 'ok':
         if client.logged_in:
             try:
-                client.calculated_period = __getCurrentPeriod(client, True, periodName)
+                client.calculated_period = __get_current_period(client, True, periodName)
                 return {
                     'status': 'ok',
                     'period': client.calculated_period.name
@@ -348,7 +348,7 @@ def homework(token, dateFrom, dateTo, response):
         return success
 
 # Traitements des notes (Non Rendu, Absent, etc.)
-def __getGradeState(grade_value:str, significant:bool = False) -> int|str :
+def __get_grade_state(grade_value:str, significant:bool = False) -> int|str :
     grade_value = str(grade_value)
     if significant:
         grade_translate = [
@@ -376,7 +376,7 @@ def __getGradeState(grade_value:str, significant:bool = False) -> int|str :
         except (ValueError, IndexError):
             return "-1"
 
-def __transformToNumber(value:str)->float|int:
+def __transform_to_number(value:str)->float|int:
     try:
         return int(value)
     except ValueError:
@@ -403,13 +403,13 @@ def grades(token, response):
                 "is_optional": grade.is_optionnal,
                 "is_out_of_20": grade.is_out_of_20,
                 "grade": {
-                    "value": __transformToNumber(__getGradeState(grade.grade)),
-                    "out_of": __transformToNumber(grade.out_of),
-                    "coefficient": __transformToNumber(grade.coefficient),
-                    "average": __transformToNumber(__getGradeState(grade.average)),
-                    "max": __transformToNumber(__getGradeState(grade.max)),
-                    "min": __transformToNumber(__getGradeState(grade.min)),
-                    "significant": __getGradeState(grade.grade, True),
+                    "value": __transform_to_number(__get_grade_state(grade.grade)),
+                    "out_of": __transform_to_number(grade.out_of),
+                    "coefficient": __transform_to_number(grade.coefficient),
+                    "average": __transform_to_number(__get_grade_state(grade.average)),
+                    "max": __transform_to_number(__get_grade_state(grade.max)),
+                    "min": __transform_to_number(__get_grade_state(grade.min)),
+                    "significant": __get_grade_state(grade.grade, True),
                 }
             }
 
@@ -425,12 +425,12 @@ def grades(token, response):
                     "name": average.subject.name,
                     "groups": average.subject.groups,
                 },
-                "average": __transformToNumber(__getGradeState(average.student)),
-                "class_average": __transformToNumber(__getGradeState(average.class_average)),
-                "max": __transformToNumber(__getGradeState(average.max)),
-                "min": __transformToNumber(__getGradeState(average.min)),
-                "out_of": __transformToNumber(__getGradeState(average.out_of)),
-                "significant": __getGradeState(average.student, True),
+                "average": __transform_to_number(__get_grade_state(average.student)),
+                "class_average": __transform_to_number(__get_grade_state(average.class_average)),
+                "max": __transform_to_number(__get_grade_state(average.max)),
+                "min": __transform_to_number(__get_grade_state(average.min)),
+                "out_of": __transform_to_number(__get_grade_state(average.out_of)),
+                "significant": __get_grade_state(average.student, True),
             }
 
             averagesData.append(averageData)
@@ -438,8 +438,8 @@ def grades(token, response):
         gradeReturn = {
             "grades": gradesData,
             "averages": averagesData,
-            "overall_average": __transformToNumber(__getGradeState(client.calculated_period.overall_average)),
-            "class_overall_average": __transformToNumber(__getGradeState(client.calculated_period.class_overall_average)),
+            "overall_average": __transform_to_number(__get_grade_state(client.calculated_period.overall_average)),
+            "class_overall_average": __transform_to_number(__get_grade_state(client.calculated_period.class_overall_average)),
         }
 
         return gradeReturn
@@ -647,7 +647,7 @@ def discussions(token, response):
         return success
 
 @hug.post('/discussion/delete')
-def deleteDiscussion(token, discussionId, response):
+def delete_discussion(token, discussionId, response):
     success, client = get_client(token)
     if success == 'ok':
         try:
@@ -667,7 +667,7 @@ def deleteDiscussion(token, discussionId, response):
         return success
 
 @hug.post('/discussion/readState')
-def readDiscussion(token, discussionId, response):
+def read_discussion(token, discussionId, response):
     success, client = get_client(token)
     if success == 'ok':
         try:
@@ -688,7 +688,7 @@ def readDiscussion(token, discussionId, response):
         return success
 
 @hug.post('/discussion/reply')
-def replyDiscussion(token, discussionId, content, response):
+def reply_discussion(token, discussionId, content, response):
     success, client = get_client(token)
     if success == 'ok':
         try:
@@ -736,7 +736,7 @@ def recipients(token, response):
         return success
 
 @hug.post('/discussion/create')
-def createDiscussion(token, subject, content, recipients, response):
+def create_discussion(token, subject, content, recipients, response):
     success, client = get_client(token)
     if success == 'ok':
         try:
@@ -793,7 +793,7 @@ def evaluations(token, response):
         response.status = falcon.get_http_status(498)
         return success
 
-def __getMealFood(meal):
+def __get_meal_food(meal):
     if meal is None:
         return None
     else:
@@ -801,11 +801,11 @@ def __getMealFood(meal):
         for food in meal:
             foods.append({
                         "name": food.name,
-                        "labels": __getFoodLabels(food.labels),
+                        "labels": __get_food_labels(food.labels),
                     })
         return foods
 
-def __getFoodLabels(labels):
+def __get_food_labels(labels):
     if labels is None:
         return None
     else:
@@ -828,12 +828,12 @@ def menu(token, dateFrom, dateTo, response):
 
         menusAllData = []
         for menu in allMenus:
-            cheese = __getMealFood(menu.cheese)
-            dessert = __getMealFood(menu.dessert)
-            other_meal = __getMealFood(menu.other_meal)
-            side_meal = __getMealFood(menu.side_meal)
-            main_meal = __getMealFood(menu.main_meal)
-            first_meal = __getMealFood(menu.first_meal)
+            cheese = __get_meal_food(menu.cheese)
+            dessert = __get_meal_food(menu.dessert)
+            other_meal = __get_meal_food(menu.other_meal)
+            side_meal = __get_meal_food(menu.side_meal)
+            main_meal = __get_meal_food(menu.main_meal)
+            first_meal = __get_meal_food(menu.first_meal)
 
             menuData = {
                 "id": menu.id,
@@ -870,7 +870,7 @@ def export_ical(token, response):
         return success
 
 @hug.post('/homework/changeState')
-def homework_setAsDone(token, dateFrom, dateTo, homeworkId, response):
+def set_homework_as_done(token, dateFrom, dateTo, homeworkId, response):
     dateFrom = datetime.datetime.strptime(dateFrom, "%Y-%m-%d").date()
     dateTo = datetime.datetime.strptime(dateTo, "%Y-%m-%d").date()
     success, client = get_client(token)
