@@ -172,9 +172,23 @@ def generate_token(response, body=None, method: hug.types.one_of(['url', 'qrcode
         }
         return error
 
+
 # TODO: METTRE A JOUR CETTE PARTIE SI DES PROBLEMES APPARAISSENT
 # Peut poser problème avec certains établissements
-def __get_current_period(client, wantSpecificPeriod: bool = False, specificPeriod: str = None, wantAllPeriods: bool = False):
+def __get_current_period(client: pronotepy.Client, wantSpecificPeriod: bool = False, specificPeriod: str = None, wantAllPeriods: bool = False) -> pronotepy.Period:
+    """
+    Permet de récupérer la période actuelle du client Pronote ou une période spécifique.
+    
+    Args:
+        client (pronotepy.Client): Le client Pronote
+        wantSpecificPeriod (bool, optional): Si True, la fonction va retourner la période spécifiée par specificPeriod. Si False, la fonction va retourner la période actuelle. Defaults to False.
+        specificPeriod (str, optional): La période à retourner. Defaults to None.
+        wantAllPeriods (bool, optional): Si True, la fonction va retourner toutes les périodes. Defaults to False.
+        
+    Returns:
+        pronotepy.Period: La période actuelle ou la période spécifiée.
+    """
+    
     if client.logged_in:
         if not wantSpecificPeriod:
             CURRENT_PERIOD_NAME = client.current_period.name.split(' ')[0]
@@ -209,10 +223,22 @@ def __get_current_period(client, wantSpecificPeriod: bool = False, specificPerio
             print("WARN: Couldn't find specific period name")
             return __get_current_period(client, False, None)
 
-@hug.post('/changePeriod')
-def change_period(token, response, periodName):
-    success, client = get_client(token)
 
+@hug.post('/changePeriod')
+def change_period(token: str, response: falcon.Response, periodName: str) -> dict[str, str]:
+    """
+    Permets de changer la période actuelle du client Pronote.
+    
+    Args:
+        token (str): Le token du client Pronote
+        response (falcon.Response): La réponse de la requête
+        periodName (str): Le nom de la période à sélectionner
+        
+    Returns:
+        dict[str, str]: Le statut de la requête et le nom de la période sélectionnée
+    """
+    
+    success, client = get_client(token)
     if success == 'ok':
         if client.logged_in:
             try:
@@ -231,11 +257,31 @@ def change_period(token, response, periodName):
         response.status = falcon.get_http_status(498)
         return success
 
-# donne les infos sur l'user
-@hug.get('/user')
-def user(token, response):
-    success, client = get_client(token)
 
+@hug.get('/user')
+def user(token: str, response: falcon.Response) -> dict:
+    """
+    Récupère les informations de l'utilisateur.
+    
+    Args:
+        token (str): Le token du client Pronote
+        response (falcon.Response): La réponse de la requête
+        
+    Returns:
+        dict: Les informations de l'utilisateur sous la forme : 
+        
+        { 
+            "name": str,
+            "class": str, 
+            "establishment": str, 
+            "phone": str, 
+            "profile_picture": str, 
+            "delegue": bool, 
+            "periodes": list[dict] 
+        }
+    """
+    
+    success, client = get_client(token)
     if success == 'ok':
         if client.logged_in:
             periods = []
@@ -263,9 +309,42 @@ def user(token, response):
         response.status = falcon.get_http_status(498)
         return success
 
-## renvoie l'emploi du temps
+
 @hug.get('/timetable')
-def timetable(token, dateString, response):
+def timetable(token: str, dateString: str, response: falcon.Response) -> list[dict]:
+    """
+    Récupère l'emploi du temps de l'utilisateur.
+    
+    Args:
+        token (str): Le token du client Pronote
+        dateString (str): La date à récupérer sous la forme YYYY-MM-DD
+        response (falcon.Response): La réponse de la requête
+        
+    Returns:
+        list[dict]: Les informations de l'emploi du temps :
+        
+        [{
+            "id": str,
+            "num": int,
+            "subject": {
+                "id": str,
+                "name": str,
+                "groups": bool
+            },
+            "teachers": list[str],
+            "rooms": list[str],
+            "group_names": list[str]
+            "start": str,
+            "end": str,
+            "duration": int
+            "is_cancelled": bool,
+            "is_outing": bool,
+            "is_detention": bool,
+            "is_exempted": bool,
+            "is_test": bool,
+        }]
+    """
+    
     dateToGet = datetime.datetime.strptime(dateString, "%Y-%m-%d").date()
     success, client = get_client(token)
 
@@ -305,9 +384,40 @@ def timetable(token, dateString, response):
         response.status = falcon.get_http_status(498)
         return success
 
-## renvoie les devoirs
+
 @hug.get('/homework')
-def homework(token, dateFrom, dateTo, response):
+def homework(token: str, dateFrom: str, dateTo: str, response: falcon.Response) -> list[dict]:
+    """
+    Récupère les devoirs de l'utilisateur.
+    
+    Args:
+        token (str): Le token du client Pronote
+        dateFrom (str): La date de début à récupérer sous la forme YYYY-MM-DD
+        dateTo (str): La date de fin à récupérer sous la forme YYYY-MM-DD
+        response (falcon.Response): La réponse de la requête
+        
+    Returns:
+        list[dict]: Les informations des devoirs :
+
+        {
+            "id": str,
+            "subject": {
+                "id": str,
+                "name": str,
+                "groups": bool
+            },
+            "description": str,
+            "background_color": str,
+            "date": str,
+            "files": list[dict {
+                "id": str,
+                "name": str,
+                "url": str,
+                "type": str
+            }]
+        }
+    """
+    
     dateFrom = datetime.datetime.strptime(dateFrom, "%Y-%m-%d").date()
     dateTo = datetime.datetime.strptime(dateTo, "%Y-%m-%d").date()
     success, client = get_client(token)
@@ -347,20 +457,39 @@ def homework(token, dateFrom, dateTo, response):
         response.status = falcon.get_http_status(498)
         return success
 
-# Traitements des notes (Non Rendu, Absent, etc.)
+
 def __get_grade_state(grade_value:str, significant:bool = False) -> int|str :
+    """
+    Récupère l'état d'une note sous forme d'int. (Non Rendu, Absent, etc.)
+    
+    Args:
+        grade_value (str): La valeur de la note
+        significant (bool): Si on souhaite récupérer l'état de la note ou la note elle-même. Si True on récupère l'état sous la forme d'un int :
+            1 : Absent
+            2 : Dispensé
+            3 : Non Noté
+            4 : Inapte
+            5 : Non Rendu
+            6 : Absent compte 0
+            7 : Non Rendu compte 0
+            8 : Félicitations
+            Si False on récupère la note elle-même ou -1 si la note ne compte pas comme telle. Defaults to False.
+        
+    Returns:
+        int|str: L'état de la note sous forme d'int ou la note elle-même (str) si significant est False.    
+    """
+    
     grade_value = str(grade_value)
     if significant:
         grade_translate = [
-            "Absent", # Absent (1)
-            "Dispense", # Dispensé (2)
-            "NonNote", # Non Noté (3)
-            "Inapte", # Inapte (4)
-            "NonRendu", # Non Rendu (5)
-            "AbsentZero", # Absent avec 0 (6)
-            "NonRenduZero", # Non Rendu avec 0 (7)
-            "Felicitations", # Félicitations (8)
-            "" # Vide (9)
+            "Absent",
+            "Dispense",
+            "NonNote",
+            "Inapte",
+            "NonRendu",
+            "AbsentZero",
+            "NonRenduZero",
+            "Felicitations"
         ]
         try:
             int(grade_value[0])
@@ -376,15 +505,77 @@ def __get_grade_state(grade_value:str, significant:bool = False) -> int|str :
         except (ValueError, IndexError):
             return "-1"
 
+
 def __transform_to_number(value:str)->float|int:
+    """
+    Transforme une valeur en nombre (int ou float)
+    
+    Args:
+        value (str): La valeur à transformer
+        
+    Returns:
+        float|int: La valeur transformée ('1,5' -> 1.5)
+    """
+    
     try:
         return int(value)
     except ValueError:
         return float(value.replace(",", "."))
 
-## renvoie les notes
+
 @hug.get('/grades')
-def grades(token, response):
+def grades(token: str, response: falcon.Response) -> dict:
+    """
+    Récupère les notes de l'utilisateur.
+    
+    Args:
+        token (str): Le token du client Pronote
+        response (falcon.Response): La réponse de la requête
+        
+    Returns:
+        dict: Les informations des notes :
+        
+        {
+            grades : [{
+                "id": str,
+                "subject": {
+                    "id": str,
+                    "name": str,
+                    "groups": bool
+                },
+                "date": str,
+                "description": str,
+                "is_bonus": bool,
+                "is_optional": bool,
+                "is_out_of_20": bool,
+                "grade": {
+                    "value": int,
+                    "out_of": int,
+                    "coefficient": int,
+                    "average": int,
+                    "max": int,
+                    "min": int,
+                    "significant": int
+                },
+            }],
+            "average": [{
+                "subject": {
+                    "id": str,
+                    "name": str,
+                    "groups": bool
+                },
+                "average": int,
+                "class_average": int,
+                "max": int,
+                "min": int,
+                "out_of": int,
+                "significant": int
+            }],
+            "overall_average": int,
+            "class_overall_average": int,
+        }
+    """
+    
     success, client = get_client(token)
     if success == 'ok':
         allGrades = client.calculated_period.grades
@@ -447,9 +638,30 @@ def grades(token, response):
         response.status = falcon.get_http_status(498)
         return success
 
-## renvoie les absences
+
 @hug.get('/absences')
-def absences(token, response, allPeriods=True):
+def absences(token: str, response: falcon.Response, allPeriods: bool = True) -> list[dict]:
+    """
+    Récupère les absences de l'utilisateur.
+    
+    Args:
+        token (str): Le token du client Pronote
+        response (falcon.Response): La réponse de la requête
+        allPeriods (bool): Si toutes les périodes doivent être récupérées. Par défaut, toutes les périodes sont récupérées.
+        
+    Returns:
+        list[dict]: Les informations des absences :
+        
+        [{
+            "id": str,
+            "from": str,
+            "to": str,
+            "justified": bool,
+            "hours": int,
+            "reasons": list[str],
+        }]
+    """
+    
     success, client = get_client(token)
     if success == 'ok':
         if allPeriods:
@@ -474,9 +686,31 @@ def absences(token, response, allPeriods=True):
     else:
         response.status = falcon.get_http_status(498)
         return success
-    
+
+
 @hug.get('/delays')
-def delays(token, response, allPeriods: bool = True):
+def delays(token: str, response: falcon.Response, allPeriods: bool = True) -> list[dict]:
+    """
+    Récupère les retards de l'utilisateur.
+    
+    Args:
+        token (str): Le token du client Pronote
+        response (falcon.Response): La réponse de la requête
+        allPeriods (bool): Si toutes les périodes doivent être récupérées. Par défaut, toutes les périodes sont récupérées.
+        
+    Returns:
+        list[dict]: Les informations des retards :
+        
+        [{
+            "id": str,
+            "date": str,
+            "duration": int,
+            "justified": bool,
+            "justification": str,
+            "reasons": list[str]
+        }]
+    """
+    
     success, client = get_client(token)
     if success == 'ok':
         if allPeriods:
@@ -502,8 +736,62 @@ def delays(token, response, allPeriods: bool = True):
         response.status = falcon.get_http_status(498)
         return success
 
+
 @hug.get('/punishments')
-def punishments(token, response, allPeriods: bool = True):
+def punishments(token: str, response: falcon.Response, allPeriods: bool = True) -> list[dict]:
+    """
+    Récupère les punitions de l'utilisateur.
+    
+    Args:
+        token (str): Le token du client Pronote
+        response (falcon.Response): La réponse de la requête
+        allPeriods (bool): Si toutes les périodes doivent être récupérées. Par défaut, toutes les périodes sont récupérées.
+        
+    Returns:
+        list[dict]: Les informations des punitions :
+        
+        [{
+            "id": str,
+            "schedulable": bool,
+            "schedule": [
+                {
+                    "id": str,
+                    "start": str,
+                    "duration": int,
+            ],
+            "date": str,
+            "given_by": str,
+            "exclusion:" bool,
+            "during_lesson": bool,
+            "homework": [{
+                "text": str,
+                "documents": [{
+                    "id": str,
+                    "name": str,
+                    "url": str,
+                    "type": str,
+                }],
+            }],
+            "reasons": {
+                "id": str,
+                "circumstances": [{
+                    "id": str,
+                    "name": str,
+                    "url": str,
+                    "type": str,
+                }],
+                "documents": [{
+                    "id": str,
+                    "name": str,
+                    "url": str,
+                    "type": str,
+                }],
+            },
+            "nature": str,
+            "duration": int,
+        }]
+    """
+    
     success, client = get_client(token)
     if success == 'ok':
         if allPeriods:
@@ -570,8 +858,39 @@ def punishments(token, response, allPeriods: bool = True):
         response.status = falcon.get_http_status(498)
         return success
 
+
 @hug.get('/news')
-def news(token, response):
+def news(token: str, response: falcon.Response) -> list[dict]:
+    """
+    Récupère les actualités de l'utilisateur.
+    
+    Args:
+        token (str): Le token du client Pronote
+        response (falcon.Response): La réponse de la requête
+        
+    Returns:
+        list[dict]: Les informations des actualités :
+        
+        [{
+            "id": str,
+            "title": str,
+            "date": str,
+            "category": str,
+            "read": bool,
+            "survey": bool,
+            "anonymous_survey": bool,
+            "author": str,
+            "content": str,
+            "attachments": [{
+                "id": str,
+                "name": str,
+                "url": str,
+                "type": str,
+            }],
+            "html_content": str,
+        }]
+    """
+    
     success, client = get_client(token)
     if success == 'ok':
         allNews = client.information_and_surveys()
@@ -609,8 +928,37 @@ def news(token, response):
         response.status = falcon.get_http_status(498)
         return success
 
+
 @hug.get('/discussions')
-def discussions(token, response):
+def discussions(token: str, response: falcon.Response) -> list[dict]:
+    """
+    Récupère les discussions de l'utilisateur.
+    
+    Args:
+        token (str): Le token du client Pronote
+        response (falcon.Response): La réponse de la requête
+        
+    Returns:
+        list[dict]: Les informations des discussions :
+        
+        [{
+            "id": str,
+            "subject": str,
+            "creator": str,
+            "participants": list[str],
+            "date": str,
+            "unread": int,
+            "replyable": bool,
+            "messages": [{
+                "id": str,
+                "content": str,
+                "author": str,
+                "date": str,
+                "seen": bool,
+            }],
+        }]
+    """
+    
     success, client = get_client(token)
     if success == 'ok':
         allDiscussions = client.discussions()
@@ -646,8 +994,21 @@ def discussions(token, response):
         response.status = falcon.get_http_status(498)
         return success
 
+
 @hug.post('/discussion/delete')
-def delete_discussion(token, discussionId, response):
+def delete_discussion(token: str, discussionId: str, response: falcon.Response) -> str:
+    """
+    Supprime une discussion.
+    
+    Args:
+        token (str): Le token du client Pronote
+        discussionId (str): L'identifiant de la discussion
+        response (falcon.Response): La réponse de la requête
+        
+    Returns:
+        str: 'ok' si la discussion a été supprimée, 'not found' si la discussion n'a pas été trouvée, 'error' si une erreur est survenue.
+    """
+    
     success, client = get_client(token)
     if success == 'ok':
         try:
@@ -667,7 +1028,19 @@ def delete_discussion(token, discussionId, response):
         return success
 
 @hug.post('/discussion/readState')
-def read_discussion(token, discussionId, response):
+def read_discussion(token: str, discussionId: str, response: falcon.Response) -> str:
+    """
+    Change l'état de lecture d'une discussion.
+    
+    Args:
+        token (str): Le token du client Pronote
+        discussionId (str): L'identifiant de la discussion
+        response (falcon.Response): La réponse de la requête
+        
+    Returns:
+        str: 'ok' si l'état de lecture a été changé, 'not found' si la discussion n'a pas été trouvée, 'error' si une erreur est survenue.
+    """
+    
     success, client = get_client(token)
     if success == 'ok':
         try:
@@ -688,7 +1061,20 @@ def read_discussion(token, discussionId, response):
         return success
 
 @hug.post('/discussion/reply')
-def reply_discussion(token, discussionId, content, response):
+def reply_discussion(token: str, discussionId: str, content: str, response: falcon.Response) -> str:
+    """
+    Répond à une discussion.
+    
+    Args:
+        token (str): Le token du client Pronote
+        discussionId (str): L'identifiant de la discussion
+        content (str): Le contenu du message
+        response (falcon.Response): La réponse de la requête
+        
+    Returns:
+        str: 'ok' si le message a été envoyé, 'not replyable' si la discussion n'est pas ouverte à la réponse, 'not found' si la discussion n'a pas été trouvée, 'error' si une erreur est survenue.
+    """
+    
     success, client = get_client(token)
     if success == 'ok':
         try:
@@ -711,8 +1097,29 @@ def reply_discussion(token, discussionId, content, response):
         response.status = falcon.get_http_status(498)
         return success
 
+
 @hug.get('/recipients')
-def recipients(token, response):
+def recipients(token: str, response: falcon.Response) -> list[dict]:
+    """
+    Récupère la liste des destinataires possibles.
+    
+    Args:
+        token (str): Le token du client Pronote
+        response (falcon.Response): La réponse de la requête
+        
+    Returns:
+        list: La liste des destinataires possibles.
+        
+        [{
+            "id": str,
+            "name": str,
+            "type": str,
+            "email": str,
+            "functions": list[str],
+            "with_discussion": bool
+        }]
+    """
+    
     success, client = get_client(token)
     if success == 'ok':
         allRecipients = client.get_recipients()
@@ -735,8 +1142,23 @@ def recipients(token, response):
         response.status = falcon.get_http_status(498)
         return success
 
+
 @hug.post('/discussion/create')
-def create_discussion(token, subject, content, recipients, response):
+def create_discussion(token: str, subject: str, content: str, recipients: list[str], response: falcon.Response) -> str:
+    """
+    Crée une discussion.
+    
+    Args:
+        token (str): Le token du client Pronote
+        subject (str): Le sujet de la discussion
+        content (str): Le contenu du message
+        recipients (list[str]): La liste des destinataires
+        response (falcon.Response): La réponse de la requête
+        
+    Returns:
+        str: 'ok' si la discussion a été créée, 'error' si une erreur est survenue.
+    """
+    
     success, client = get_client(token)
     if success == 'ok':
         try:
@@ -749,9 +1171,43 @@ def create_discussion(token, subject, content, recipients, response):
         response.status = falcon.get_http_status(498)
         return success
 
-# Renvoie les évaluations
+
 @hug.get('/evaluations')
-def evaluations(token, response):
+def evaluations(token: str, response: falcon.Response) -> list[dict]:
+    """
+    Permet de récupérer les évaluations.
+    
+    Args:
+        token (str): Le token du client Pronote
+        response (falcon.Response): La réponse de la requête
+        
+    Returns:
+        list[dict]: La liste des évaluations.
+        
+        [{
+            "id": str,
+            "subject": {
+                "id": str,
+                "name": str,
+                "groups": bool
+            },
+            "name": str,
+            "description": str,
+            "teacher": str, 
+            "date": str,
+            "palier": str,
+            "coefficient": str,
+            "acquisitions": [{
+                "id": str,
+                "name": str,
+                "coefficient": str,
+                "abbreviation": str,
+                "domain": str,
+                "level": str
+            }],
+        }]
+    """
+    
     success, client = get_client(token)
     if success == 'ok':
         allEvaluations = client.calculated_period.evaluations
@@ -793,19 +1249,39 @@ def evaluations(token, response):
         response.status = falcon.get_http_status(498)
         return success
 
-def __get_meal_food(meal):
+def __get_meal_food(meal: list[dict]) -> list[dict]:
+    """
+    Permet de récupérer les aliments d'un repas.
+    
+    Args:
+        meal (list): La liste des aliments du repas
+        
+    Returns:
+        list[dict]: La liste des aliments du repas.
+    """
+    
     if meal is None:
         return None
     else:
         foods = []
         for food in meal:
             foods.append({
-                        "name": food.name,
-                        "labels": __get_food_labels(food.labels),
-                    })
+                "name": food.name,
+                "labels": __get_food_labels(food.labels),
+            })
         return foods
 
-def __get_food_labels(labels):
+def __get_food_labels(labels: list[dict]) -> list[dict]:
+    """
+    Permet de récupérer les labels d'un aliment.
+    
+    Args:
+        labels (list): La liste des labels de l'aliment
+        
+    Returns:
+        list[dict]: La liste des labels de l'aliment.
+    """
+    
     if labels is None:
         return None
     else:
@@ -819,7 +1295,36 @@ def __get_food_labels(labels):
         return foodLabels
 
 @hug.get('/menu')
-def menu(token, dateFrom, dateTo, response):
+def menu(token: str, dateFrom: str, dateTo: str, response: falcon.Response) -> list[dict]:
+    """
+    Permet de récupérer les menus.
+    
+    Args:
+        token (str): Le token du client Pronote
+        dateFrom (str): La date de début
+        dateTo (str): La date de fin
+        response (falcon.Response): La réponse de la requête
+        
+    Returns:
+        list[dict]: La liste des menus.
+        
+        [{
+            "id": str,
+            "name": str,
+            "date": str,
+            "type": {
+                "is_lunch": bool,
+                "is_dinner": bool,
+            },
+            "first_meal": list[dict],
+            "dessert": list[dict],
+            "cheese": list[dict],
+            "other_meal": list[dict],
+            "side_meal": list[dict],
+            "main_meal": list[dict],
+        }]
+    """
+    
     dateFrom = datetime.datetime.strptime(dateFrom, "%Y-%m-%d").date()
     dateTo = datetime.datetime.strptime(dateTo, "%Y-%m-%d").date()
     success, client = get_client(token)
@@ -859,9 +1364,19 @@ def menu(token, dateFrom, dateTo, response):
         return success
 
 @hug.get('/export/ical')
-def export_ical(token, response):
-    success, client = get_client(token)
+def export_ical(token: str, response: falcon.Response) -> str:
+    """
+    Permet d'exporter les données de Pronote en iCal. (si l'instance de Pronote le permet)
     
+    Args:
+        token (str): Le token du client Pronote
+        response (falcon.Response): La réponse de la requête
+        
+    Returns:
+        str: L'URL de l'iCal.
+    """
+    
+    success, client = get_client(token)
     if success == 'ok':
         ical_url = client.export_ical()
         return ical_url
@@ -869,8 +1384,23 @@ def export_ical(token, response):
         response.status = falcon.get_http_status(498)
         return success
 
+
 @hug.post('/homework/changeState')
-def set_homework_as_done(token, dateFrom, dateTo, homeworkId, response):
+def set_homework_as_done(token: str, dateFrom: str, dateTo: str, homeworkId: str, response: falcon.Response) -> str:
+    """
+    Change l'état d'un devoir. (fait ou non fait)
+    
+    Args:
+        token (str): Le token du client Pronote
+        dateFrom (str): La date de début
+        dateTo (str): La date de fin
+        homeworkId (str): L'ID du devoir
+        response (falcon.Response): La réponse de la requête
+        
+    Returns:
+        str: 'ok' si tout s'est bien passé, 'not found' si le devoir n'a pas été trouvé, 'error' si une erreur est survenue.
+    """
+    
     dateFrom = datetime.datetime.strptime(dateFrom, "%Y-%m-%d").date()
     dateTo = datetime.datetime.strptime(dateTo, "%Y-%m-%d").date()
     success, client = get_client(token)
