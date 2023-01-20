@@ -480,6 +480,7 @@ def __get_grade_state(grade_value:str, significant:bool = False) -> int|str :
     """
     
     grade_value = str(grade_value)
+
     if significant:
         grade_translate = [
             "Absent",
