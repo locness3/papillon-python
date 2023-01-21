@@ -1164,7 +1164,9 @@ def create_discussion(token: str, subject: str, content: str, recipients: list[s
     success, client = get_client(token)
     if success == 'ok':
         try:
-            client.new_discussion(subject, content, recipients)
+            pro_recipients = json.loads(recipients)
+            
+            client.new_discussion(subject, content, pro_recipients)
             return 'ok'
         except:            
             response.status = falcon.get_http_status(500)
