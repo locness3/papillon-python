@@ -413,7 +413,7 @@ def homework(token: str, dateFrom: str, dateTo: str, response: falcon.Response) 
                 "id": str,
                 "name": str,
                 "url": str,
-                "type": int
+                "type": str
             }]
         }
     """
@@ -763,23 +763,28 @@ def punishments(token: str, response: falcon.Response, allPeriods: bool = True) 
             "given_by": str,
             "exclusion:" bool,
             "during_lesson": bool,
-            "homework": {
+            "homework": [{
                 "text": str,
                 "documents": [{
                     "id": str,
                     "name": str,
                     "url": str,
-                    "type": int,
+                    "type": str,
                 }],
-            },
+            }],
             "reasons": {
-                "text": str,
-                "circumstances": str,
+                "id": str,
+                "circumstances": [{
+                    "id": str,
+                    "name": str,
+                    "url": str,
+                    "type": str,
+                }],
                 "documents": [{
                     "id": str,
                     "name": str,
                     "url": str,
-                    "type": int,
+                    "type": str,
                 }],
             },
             "nature": str,
@@ -880,7 +885,7 @@ def news(token: str, response: falcon.Response) -> list[dict]:
                 "id": str,
                 "name": str,
                 "url": str,
-                "type": int,
+                "type": str,
             }],
             "html_content": str,
         }]
