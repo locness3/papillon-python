@@ -274,7 +274,10 @@ def user(token: str, response: falcon.Response) -> dict:
             "name": str,
             "class": str, 
             "establishment": str, 
-            "phone": str, 
+            "phone": str,
+            "address": list[str], 
+            "email": str,
+            "ine": str,
             "profile_picture": str, 
             "delegue": bool, 
             "periodes": list[dict] 
@@ -299,6 +302,9 @@ def user(token: str, response: falcon.Response) -> dict:
                 "class": client.info.class_name,
                 "establishment": client.info.establishment,
                 "phone": client.info.phone,
+                "email": client.info.email,
+                "address": client.info.address,
+                "ine": client.info.ine_number,
                 "profile_picture": client.info.profile_picture.url,
                 "delegue": client.info.delegue,
                 "periods": periods
