@@ -12,7 +12,7 @@ import json
 from pronotepy.ent import *
 
 API_VERSION = open('VERSION', 'r').read().strip()
-ENT_LIST = json.load(open('ent_list.json', 'r', encoding='utf8'))
+EMS_LIST = json.load(open('ems_list.json', 'r', encoding='utf8'))
 
 # ajouter les CORS sur toutes les routes
 @hug.response_middleware()
@@ -33,7 +33,7 @@ def CORS(request, response, resource):
         response.set_header('Access-Control-Max-Age', 1728000)
         response.set_header('Content-Type', 'text/plain charset=UTF-8')
         response.set_header('Content-Length', 0)
-        response.status_code = hug.HTTP_204
+        response.status_code = falcon.get_http_status(204)
 
 # système de tokens
 saved_clients = {}
@@ -75,7 +75,7 @@ def infos():
         'status': 'ok',
         'message': 'server is running',
         'version': API_VERSION,
-        'ent_list': ENT_LIST
+        'ent_list': EMS_LIST
     }
 
 # requête initiale :
@@ -462,6 +462,7 @@ def homework(token: str, dateFrom: str, dateTo: str, response: falcon.Response) 
     else:
         response.status = falcon.get_http_status(498)
         return success
+
 
 def __get_grade_state(grade_value:str, significant:bool = False) -> int|str :
     """
