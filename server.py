@@ -1146,7 +1146,7 @@ def recipients(token: str, response: falcon.Response) -> list[dict]:
 
 
 @hug.post('/discussion/create')
-def create_discussion(token: str, subject: str, content: str, recipients: list[str], response: falcon.Response) -> str:
+def create_discussion(token: str, subject: str, content: str, recipients: str, response: falcon.Response) -> str:
     """
     Crée une discussion.
     
@@ -1154,7 +1154,7 @@ def create_discussion(token: str, subject: str, content: str, recipients: list[s
         token (str): Le token du client Pronote
         subject (str): Le sujet de la discussion
         content (str): Le contenu du message
-        recipients (list[str]): La liste des destinataires
+        recipients (str): La liste des destinataires (JSON)
         response (falcon.Response): La réponse de la requête
         
     Returns:
@@ -1168,9 +1168,12 @@ def create_discussion(token: str, subject: str, content: str, recipients: list[s
             
             client.new_discussion(subject, content, pro_recipients)
             return 'ok'
-        except:            
+        except Exception as e:            
             response.status = falcon.get_http_status(500)
-            return 'error'
+            return {
+                "status": "error",
+                "error": str(e)
+            }
     else:
         response.status = falcon.get_http_status(498)
         return success
