@@ -492,16 +492,18 @@ def __get_grade_state(grade_value:str, significant:bool = False) -> int|str :
             "NonRenduZero",
             "Felicitations"
         ]
-        if len(grade_value) >= 0 or grade_value.replace('.', '').isdigit():
+        try:
+            int(grade_value[0])
             return 0
-        else:
-            if len(grade_value) == 0:
+        except (ValueError, IndexError):
+            if grade_value == "":
                 return -1
             return grade_translate.index(grade_value) + 1
     else:
-        if len(grade_value) >= 0 or grade_value.replace('.', '').isdigit():
+        try:
+            int(grade_value[0])
             return grade_value
-        else:
+        except (ValueError, IndexError):
             return "-1"
 
 
@@ -515,12 +517,11 @@ def __transform_to_number(value:str)->float|int:
     Returns:
         float|int: La valeur transformée ('1,5' -> 1.5)
     """
-
-    if value.isdigit():
+    
+    try:
         return int(value)
-    else:
-        return float(value.replace(',', '.'))
-
+    except ValueError:
+        return float(value.replace(",", "."))
 
 
 @hug.get('/grades')
