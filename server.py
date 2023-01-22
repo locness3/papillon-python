@@ -998,7 +998,7 @@ def discussions(token: str, response: falcon.Response) -> list[dict]:
 
 
 @hug.post('/discussion/delete')
-def delete_discussion(token: str, discussionId: str, response: falcon.Response) -> str:
+def delete_discussion(token: str, discussionId: str, response: falcon.Response):
     """
     Supprime une discussion.
     
@@ -1030,7 +1030,7 @@ def delete_discussion(token: str, discussionId: str, response: falcon.Response) 
         return success
 
 @hug.post('/discussion/readState')
-def read_discussion(token: str, discussionId: str, response: falcon.Response) -> str:
+def read_discussion(token: str, discussionId: str, response: falcon.Response):
     """
     Change l'état de lecture d'une discussion.
     
@@ -1063,7 +1063,7 @@ def read_discussion(token: str, discussionId: str, response: falcon.Response) ->
         return success
 
 @hug.post('/discussion/reply')
-def reply_discussion(token: str, discussionId: str, content: str, response: falcon.Response) -> str:
+def reply_discussion(token: str, discussionId: str, content: str, response: falcon.Response):
     """
     Répond à une discussion.
     
@@ -1146,7 +1146,7 @@ def recipients(token: str, response: falcon.Response) -> list[dict]:
 
 
 @hug.post('/discussion/create')
-def create_discussion(token: str, subject: str, content: str, recipientsId: str, response: falcon.Response) -> str:
+def create_discussion(token: str, subject: str, content: str, recipientsId: str, response: falcon.Response):
     """
     Créer une discussion.
     
@@ -1186,7 +1186,10 @@ def create_discussion(token: str, subject: str, content: str, recipientsId: str,
                     }
                     
             client.new_discussion(subject, content, prn_recipients)
-            return 'ok'
+            return {
+                "status": "ok",
+                "error": None
+            }
         except Exception as e:            
             response.status = falcon.get_http_status(500)
             return {
@@ -1195,7 +1198,10 @@ def create_discussion(token: str, subject: str, content: str, recipientsId: str,
             }
     else:
         response.status = falcon.get_http_status(498)
-        return success
+        return {
+            "status": "error",
+            "error": success
+        }
 
 
 @hug.get('/evaluations')
@@ -1390,7 +1396,7 @@ def menu(token: str, dateFrom: str, dateTo: str, response: falcon.Response) -> l
         return success
 
 @hug.get('/export/ical')
-def export_ical(token: str, response: falcon.Response) -> str:
+def export_ical(token: str, response: falcon.Response):
     """
     Permet d'exporter les données de Pronote en iCal. (si l'instance de Pronote le permet)
     
@@ -1412,7 +1418,7 @@ def export_ical(token: str, response: falcon.Response) -> str:
 
 
 @hug.post('/homework/changeState')
-def set_homework_as_done(token: str, dateFrom: str, dateTo: str, homeworkId: str, response: falcon.Response) -> str:
+def set_homework_as_done(token: str, dateFrom: str, dateTo: str, homeworkId: str, response: falcon.Response):
     """
     Change l'état d'un devoir. (fait ou non fait)
     
