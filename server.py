@@ -1146,15 +1146,15 @@ def recipients(token: str, response: falcon.Response) -> list[dict]:
 
 
 @hug.post('/discussion/create')
-def create_discussion(token: str, subject: str, content: str, recipients: str, response: falcon.Response) -> str:
+def create_discussion(token: str, subject: str, content: str, recipientsId: str, response: falcon.Response) -> str:
     """
-    Crée une discussion.
+    Créer une discussion.
     
     Args:
         token (str): Le token du client Pronote
         subject (str): Le sujet de la discussion
         content (str): Le contenu du message
-        recipients (str): La liste des destinataires (JSON)
+        recipientsId (str): La liste des identifiants des destinataires ([id1, id2, id3])
         response (falcon.Response): La réponse de la requête
         
     Returns:
@@ -1164,9 +1164,28 @@ def create_discussion(token: str, subject: str, content: str, recipients: str, r
     success, client = get_client(token)
     if success == 'ok':
         try:
-            pro_recipients = json.loads(recipients)
-            
-            client.new_discussion(subject, content, pro_recipients)
+            prn_recipients = []
+            for recipient in json.loads(recipientsId):
+                for prn_recipient in client.get_recipients():
+                    if prn_recipient.id == recipient:
+                        prn_recipients.append(prn_recipient)
+                        
+            if len(prn_recipients) == 0:
+                response.status = falcon.get_http_status(400)
+                return {
+                    "status": "error",
+                    "error": "Aucun destinataire valide n'a été trouvé."
+                }
+                
+            for prn_recipient in prn_recipients:
+                if prn_recipient.with_discussion == False:
+                    response.status = falcon.get_http_status(400)
+                    return {
+                        "status": "error",
+                        "error": "Un ou plusieurs destinataires n'acceptent pas les discussions."
+                    }
+                    
+            client.new_discussion(subject, content, prn_recipients)
             return 'ok'
         except Exception as e:            
             response.status = falcon.get_http_status(500)
