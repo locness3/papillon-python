@@ -317,7 +317,7 @@ def user(token: str, response: falcon.Response) -> dict:
 
 
 @hug.get('/timetable')
-def timetable(token: str, dateString: str, response: falcon.Response) -> list[dict]:
+def timetable(token: str, dateString: str, response: falcon.Response):
     """
     Récupère l'emploi du temps de l'utilisateur.
     
@@ -392,7 +392,7 @@ def timetable(token: str, dateString: str, response: falcon.Response) -> list[di
 
 
 @hug.get('/homework')
-def homework(token: str, dateFrom: str, dateTo: str, response: falcon.Response) -> list[dict]:
+def homework(token: str, dateFrom: str, dateTo: str, response: falcon.Response):
     """
     Récupère les devoirs de l'utilisateur.
     
@@ -647,7 +647,7 @@ def grades(token: str, response: falcon.Response) -> dict:
 
 
 @hug.get('/absences')
-def absences(token: str, response: falcon.Response, allPeriods: bool = True) -> list[dict]:
+def absences(token: str, response: falcon.Response, allPeriods: bool = True):
     """
     Récupère les absences de l'utilisateur.
     
@@ -696,7 +696,7 @@ def absences(token: str, response: falcon.Response, allPeriods: bool = True) -> 
 
 
 @hug.get('/delays')
-def delays(token: str, response: falcon.Response, allPeriods: bool = True) -> list[dict]:
+def delays(token: str, response: falcon.Response, allPeriods: bool = True):
     """
     Récupère les retards de l'utilisateur.
     
@@ -745,7 +745,7 @@ def delays(token: str, response: falcon.Response, allPeriods: bool = True) -> li
 
 
 @hug.get('/punishments')
-def punishments(token: str, response: falcon.Response, allPeriods: bool = True) -> list[dict]:
+def punishments(token: str, response: falcon.Response, allPeriods: bool = True):
     """
     Récupère les punitions de l'utilisateur.
     
@@ -862,7 +862,7 @@ def punishments(token: str, response: falcon.Response, allPeriods: bool = True) 
 
 
 @hug.get('/news')
-def news(token: str, response: falcon.Response) -> list[dict]:
+def news(token: str, response: falcon.Response):
     """
     Récupère les actualités de l'utilisateur.
     
@@ -932,7 +932,7 @@ def news(token: str, response: falcon.Response) -> list[dict]:
 
 
 @hug.get('/discussions')
-def discussions(token: str, response: falcon.Response) -> list[dict]:
+def discussions(token: str, response: falcon.Response):
     """
     Récupère les discussions de l'utilisateur.
     
@@ -1131,7 +1131,7 @@ def reply_discussion(token: str, discussionId: str, content: str, response: falc
 
 
 @hug.get('/recipients')
-def recipients(token: str, response: falcon.Response) -> list[dict]:
+def recipients(token: str, response: falcon.Response):
     """
     Récupère la liste des destinataires possibles.
     
@@ -1232,7 +1232,7 @@ def create_discussion(token: str, subject: str, content: str, recipientsId: str,
 
 
 @hug.get('/evaluations')
-def evaluations(token: str, response: falcon.Response) -> list[dict]:
+def evaluations(token: str, response: falcon.Response):
     """
     Permet de récupérer les évaluations.
     
@@ -1308,7 +1308,7 @@ def evaluations(token: str, response: falcon.Response) -> list[dict]:
         response.status = falcon.get_http_status(498)
         return success
 
-def __get_meal_food(meal: list[dict]) -> list[dict]:
+def __get_meal_food(meal: list[dict]):
     """
     Permet de récupérer les aliments d'un repas.
     
@@ -1330,7 +1330,7 @@ def __get_meal_food(meal: list[dict]) -> list[dict]:
             })
         return foods
 
-def __get_food_labels(labels: list[dict]) -> list[dict]:
+def __get_food_labels(labels: list[dict]):
     """
     Permet de récupérer les labels d'un aliment.
     
@@ -1354,7 +1354,7 @@ def __get_food_labels(labels: list[dict]) -> list[dict]:
         return foodLabels
 
 @hug.get('/menu')
-def menu(token: str, dateFrom: str, dateTo: str, response: falcon.Response) -> list[dict]:
+def menu(token: str, dateFrom: str, dateTo: str, response: falcon.Response):
     """
     Permet de récupérer les menus.
     
