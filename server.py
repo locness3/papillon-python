@@ -1018,13 +1018,22 @@ def delete_discussion(token: str, discussionId: str, response: falcon.Response):
             for discussion in allDiscussions:
                 if discussion.id == discussionId:
                     discussion.delete()
-                    return 'ok'
+                    return {
+                        "status": "ok",
+                        "error": None
+                    }
                 else:
                     response.status = falcon.get_http_status(404)
-                    return 'not found'
-        except:
+                    return {
+                        "status": "not found",
+                        "error": "La discussion n'a pas été trouvée."
+                    }
+        except Exception as e:
             response.status = falcon.get_http_status(500)
-            return 'error'
+            return {
+                "status": "error",
+                "error": str(e)
+            }
     else:
         response.status = falcon.get_http_status(498)
         return success
@@ -1051,13 +1060,22 @@ def read_discussion(token: str, discussionId: str, response: falcon.Response):
                 if discussion.id == discussionId:
                     if discussion.unread == 0: discussion.mark_as(False)
                     else: discussion.mark_as(True)
-                    return 'ok'
+                    return {
+                        "status": "ok",
+                        "error": None
+                    }
                 else:
                     response.status = falcon.get_http_status(404)
-                    return 'not found'
-        except:
+                    return {
+                        "status": "not found",
+                        "error": "La discussion n'a pas été trouvée."
+                    }
+        except Exception as e:
             response.status = falcon.get_http_status(500)
-            return 'error'
+            return {
+                "status": "error",
+                "error": str(e)
+            }
     else:
         response.status = falcon.get_http_status(498)
         return success
@@ -1085,16 +1103,28 @@ def reply_discussion(token: str, discussionId: str, content: str, response: falc
                 if discussion.id == discussionId:
                     if discussion.replyable:
                         discussion.reply(content)
-                        return 'ok'
+                        return {
+                            "status": "ok",
+                            "error": None
+                        }
                     else:
                         response.status = falcon.get_http_status(403)
-                        return 'not replyable'
+                        return {
+                            "status": "not replyable",
+                            "error": "La discussion n'est pas ouverte à la réponse."
+                        }
                 else:
                     response.status = falcon.get_http_status(404)
-                    return 'not found'
-        except:
+                    return {
+                        "status": "not found",
+                        "error": "La discussion n'a pas été trouvée."
+                    }
+        except Exception as e:
             response.status = falcon.get_http_status(500)
-            return 'error'
+            return {
+                "status": "error",
+                "error": str(e)
+            }
     else:
         response.status = falcon.get_http_status(498)
         return success
@@ -1173,7 +1203,7 @@ def create_discussion(token: str, subject: str, content: str, recipientsId: str,
             if len(prn_recipients) == 0:
                 response.status = falcon.get_http_status(400)
                 return {
-                    "status": "error",
+                    "status": "no recipient",
                     "error": "Aucun destinataire valide n'a été trouvé."
                 }
                 
@@ -1181,7 +1211,7 @@ def create_discussion(token: str, subject: str, content: str, recipientsId: str,
                 if prn_recipient.with_discussion == False:
                     response.status = falcon.get_http_status(400)
                     return {
-                        "status": "error",
+                        "status": "recipient not accept discussion",
                         "error": "Un ou plusieurs destinataires n'acceptent pas les discussions."
                     }
                     
@@ -1198,10 +1228,7 @@ def create_discussion(token: str, subject: str, content: str, recipientsId: str,
             }
     else:
         response.status = falcon.get_http_status(498)
-        return {
-            "status": "error",
-            "error": success
-        }
+        return success
 
 
 @hug.get('/evaluations')
@@ -1448,13 +1475,22 @@ def set_homework_as_done(token: str, dateFrom: str, dateTo: str, homeworkId: str
                         if homework.done: homework.set_done(False)
                         else: homework.set_done(True)
                         changed = True
-                        return 'ok'
+                        return {
+                            "status": "ok",
+                            "error": None
+                        }
                 if not changed:
                     response.status = falcon.get_http_status(404)
-                    return 'not found'
-            except:
+                    return {
+                        "status": "error",
+                        "error": "Aucun devoir trouvé avec cet ID."
+                    }
+            except Exception as e:
                 response.status = falcon.get_http_status(500)
-                return 'error'
+                return {
+                    "status": "error",
+                    "error": str(e)
+                }
     else:
         response.status = falcon.get_http_status(498)
         return success
