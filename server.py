@@ -7,6 +7,7 @@ import time
 import secrets
 import falcon
 import json
+import socket
 
 # importe les ENT
 from pronotepy.ent import *
@@ -74,6 +75,7 @@ def infos():
     return {
         'status': 'ok',
         'message': 'server is running',
+        'server': socket.gethostname(),
         'version': API_VERSION,
         'ent_list': EMS_LIST
     }
