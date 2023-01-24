@@ -13,7 +13,7 @@ import socket
 from pronotepy.ent import *
 
 API_VERSION = open('VERSION', 'r').read().strip()
-EMS_LIST = json.load(open('ems_list.json', 'r', encoding='utf8'))
+CAS_LIST = json.load(open('cas_list.json', 'r', encoding='utf8'))
 
 # ajouter les CORS sur toutes les routes
 @hug.response_middleware()
@@ -34,7 +34,7 @@ def CORS(request, response, resource):
         response.set_header('Access-Control-Max-Age', 1728000)
         response.set_header('Content-Type', 'text/plain charset=UTF-8')
         response.set_header('Content-Length', 0)
-        response.status_code = falcon.get_http_status(204)
+        response.status_code = hug.HTTP_204
 
 # système de tokens
 saved_clients = {}
@@ -77,7 +77,7 @@ def infos():
         'message': 'server is running',
         'server': socket.gethostname(),
         'version': API_VERSION,
-        'ent_list': EMS_LIST
+        'ent_list': CAS_LIST
     }
 
 # requête initiale :
@@ -227,7 +227,7 @@ def __get_current_period(client: pronotepy.Client, wantSpecificPeriod: bool = Fa
 
 
 @hug.post('/changePeriod')
-def change_period(token: str, response: falcon.Response, periodName: str) -> dict[str, str]:
+def change_period(token: str, response: falcon.Response, periodName: str):
     """
     Permets de changer la période actuelle du client Pronote.
     
