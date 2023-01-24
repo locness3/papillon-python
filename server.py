@@ -8,12 +8,19 @@ import secrets
 import falcon
 import json
 import socket
+import requests
+import pickle
 
 # importe les ENT
 from pronotepy.ent import *
 
 API_VERSION = open('VERSION', 'r').read().strip()
 CAS_LIST = json.load(open('cas_list.json', 'r', encoding='utf8'))
+INSTANCE_LIST = [
+	("10.82.1.64", "Pronote-API-PYTHON-01"),
+	("10.82.1.63", "Pronote-API-PYTHON-02"),
+	("10.82.1.60", "Pronote-API-PYTHON-03")
+]
 
 # ajouter les CORS sur toutes les routes
 @hug.response_middleware()
@@ -46,11 +53,12 @@ saved_clients ->
 """
 client_timeout_threshold = 300 # le temps en sec avant qu'un jeton ne soit rendu invalide
 
-def get_client(token: str) -> tuple[str, pronotepy.Client|None]:
+def get_client(token: str, instance: bool = False) -> tuple[str, pronotepy.Client|None]:
 	"""Retourne le client Pronote associé au jeton.
 
 	Args:
 		token (str): le jeton à partir duquel retrouver le client.
+		instance (bool): si True, le client ne sera pas recherché sur les autres instances.
 
 	Returns:
 		tuple: le couple (statut, client?) associé au jeton
@@ -68,7 +76,52 @@ def get_client(token: str) -> tuple[str, pronotepy.Client|None]:
 			print(len(saved_clients), 'valid tokens')
 			return 'expired', None
 	else:
-		return 'notfound', None
+		if not instance: 
+			get_client_on_instances(token, INSTANCE_LIST)
+			if token in saved_clients:
+				client_dict = saved_clients[token]
+				if time.time() - client_dict['last_interaction'] < client_timeout_threshold:
+					client_dict['last_interaction'] = time.time()
+					return 'ok', client_dict['client']
+				else:
+					del saved_clients[token]
+					print(len(saved_clients), 'valid tokens')
+					return 'expired', None
+			else:
+				return 'notfound', None
+		else:
+			return 'notfound', None
+
+def get_client_on_instances(token: str, instances: list):
+	for instance in instances:
+		if instance[1] == socket.gethostname():
+			continue
+		print(f"Get token on {instance[1]}")
+		try:
+			r = requests.post(f"http://{instance[0]}:8000/tokenGetClient", data={'token': token}, timeout=5)
+			if r.status_code == 200 and r.text != 'notfound' and r.text != 'expired':
+				client_dict = pickle.loads(r.text.encode('ASCII'))
+				saved_clients[token] = client_dict
+				print(len(saved_clients), 'valid tokens')
+				return
+			else:
+				print(f"Failed for {instance[1]}: not found")
+				continue
+		except Exception as e:
+			print(f"Failed for {instance[1]}: {e}")
+			continue
+	return
+
+@hug.post('/tokenGetClient')
+def token_get_client(token: str, response):
+	status, _ = get_client(token, instance=True)
+	print(f"Get token by request: {status}, {token}")
+	if status == 'ok':
+		client_dict = saved_clients[token]
+		return pickle.dumps(client_dict)
+	else:
+		response.status = falcon.get_http_status(498)
+		return status
 
 @hug.get('/infos')
 def infos():
