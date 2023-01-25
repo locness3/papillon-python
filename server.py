@@ -280,7 +280,7 @@ def __get_current_period(client: pronotepy.Client, wantSpecificPeriod: bool = Fa
 
 
 @hug.post('/changePeriod')
-def change_period(token: str, response: falcon.Response, periodName: str):
+def change_period(token: str, response, periodName: str):
 	"""
 	Permets de changer la période actuelle du client Pronote.
 	
@@ -303,7 +303,7 @@ def change_period(token: str, response: falcon.Response, periodName: str):
 					'period': client.calculated_period.name
 				}
 			except Exception as e:
-				response.status = falcon.get_http_status(498)
+				response.status = falcon.get_http_status(500)
 				return {
 					'status': 'error',
 					'message': str(e)
@@ -314,7 +314,7 @@ def change_period(token: str, response: falcon.Response, periodName: str):
 
 
 @hug.get('/user')
-def user(token: str, response: falcon.Response):
+def user(token: str, response):
 	"""
 	Récupère les informations de l'utilisateur.
 	
@@ -372,7 +372,7 @@ def user(token: str, response: falcon.Response):
 
 
 @hug.get('/timetable')
-def timetable(token: str, dateString: str, response: falcon.Response):
+def timetable(token: str, dateString: str, response):
 	"""
 	Récupère l'emploi du temps de l'utilisateur.
 	
@@ -447,7 +447,7 @@ def timetable(token: str, dateString: str, response: falcon.Response):
 
 
 @hug.get('/homework')
-def homework(token: str, dateFrom: str, dateTo: str, response: falcon.Response):
+def homework(token: str, dateFrom: str, dateTo: str, response):
 	"""
 	Récupère les devoirs de l'utilisateur.
 	
@@ -586,7 +586,7 @@ def __transform_to_number(value:str)->float|int:
 
 
 @hug.get('/grades')
-def grades(token: str, response: falcon.Response):
+def grades(token: str, response):
 	"""
 	Récupère les notes de l'utilisateur.
 	
@@ -702,7 +702,7 @@ def grades(token: str, response: falcon.Response):
 
 
 @hug.get('/absences')
-def absences(token: str, response: falcon.Response, allPeriods: bool = True):
+def absences(token: str, response, allPeriods: bool = True):
 	"""
 	Récupère les absences de l'utilisateur.
 	
@@ -751,7 +751,7 @@ def absences(token: str, response: falcon.Response, allPeriods: bool = True):
 
 
 @hug.get('/delays')
-def delays(token: str, response: falcon.Response, allPeriods: bool = True):
+def delays(token: str, response, allPeriods: bool = True):
 	"""
 	Récupère les retards de l'utilisateur.
 	
@@ -800,7 +800,7 @@ def delays(token: str, response: falcon.Response, allPeriods: bool = True):
 
 
 @hug.get('/punishments')
-def punishments(token: str, response: falcon.Response, allPeriods: bool = True):
+def punishments(token: str, response, allPeriods: bool = True):
 	"""
 	Récupère les punitions de l'utilisateur.
 	
@@ -917,7 +917,7 @@ def punishments(token: str, response: falcon.Response, allPeriods: bool = True):
 
 
 @hug.get('/news')
-def news(token: str, response: falcon.Response):
+def news(token: str, response):
 	"""
 	Récupère les actualités de l'utilisateur.
 	
@@ -987,7 +987,7 @@ def news(token: str, response: falcon.Response):
 
 
 @hug.get('/discussions')
-def discussions(token: str, response: falcon.Response):
+def discussions(token: str, response):
 	"""
 	Récupère les discussions de l'utilisateur.
 	
@@ -1053,7 +1053,7 @@ def discussions(token: str, response: falcon.Response):
 
 
 @hug.post('/discussion/delete')
-def delete_discussion(token: str, discussionId: str, response: falcon.Response):
+def delete_discussion(token: str, discussionId: str, response):
 	"""
 	Supprime une discussion.
 	
@@ -1094,7 +1094,7 @@ def delete_discussion(token: str, discussionId: str, response: falcon.Response):
 		return success
 
 @hug.post('/discussion/readState')
-def read_discussion(token: str, discussionId: str, response: falcon.Response):
+def read_discussion(token: str, discussionId: str, response):
 	"""
 	Change l'état de lecture d'une discussion.
 	
@@ -1136,7 +1136,7 @@ def read_discussion(token: str, discussionId: str, response: falcon.Response):
 		return success
 
 @hug.post('/discussion/reply')
-def reply_discussion(token: str, discussionId: str, content: str, response: falcon.Response):
+def reply_discussion(token: str, discussionId: str, content: str, response):
 	"""
 	Répond à une discussion.
 	
@@ -1186,7 +1186,7 @@ def reply_discussion(token: str, discussionId: str, content: str, response: falc
 
 
 @hug.get('/recipients')
-def recipients(token: str, response: falcon.Response):
+def recipients(token: str, response):
 	"""
 	Récupère la liste des destinataires possibles.
 	
@@ -1231,7 +1231,7 @@ def recipients(token: str, response: falcon.Response):
 
 
 @hug.post('/discussion/create')
-def create_discussion(token: str, subject: str, content: str, recipientsId: str, response: falcon.Response):
+def create_discussion(token: str, subject: str, content: str, recipientsId: str, response):
 	"""
 	Créer une discussion.
 	
@@ -1287,7 +1287,7 @@ def create_discussion(token: str, subject: str, content: str, recipientsId: str,
 
 
 @hug.get('/evaluations')
-def evaluations(token: str, response: falcon.Response):
+def evaluations(token: str, response):
 	"""
 	Permet de récupérer les évaluations.
 	
@@ -1409,7 +1409,7 @@ def __get_food_labels(labels: list[dict]):
 		return foodLabels
 
 @hug.get('/menu')
-def menu(token: str, dateFrom: str, dateTo: str, response: falcon.Response):
+def menu(token: str, dateFrom: str, dateTo: str, response):
 	"""
 	Permet de récupérer les menus.
 	
@@ -1478,7 +1478,7 @@ def menu(token: str, dateFrom: str, dateTo: str, response: falcon.Response):
 		return success
 
 @hug.get('/export/ical')
-def export_ical(token: str, response: falcon.Response):
+def export_ical(token: str, response):
 	"""
 	Permet d'exporter les données de Pronote en iCal. (si l'instance de Pronote le permet)
 	
@@ -1500,7 +1500,7 @@ def export_ical(token: str, response: falcon.Response):
 
 
 @hug.post('/homework/changeState')
-def set_homework_as_done(token: str, dateFrom: str, dateTo: str, homeworkId: str, response: falcon.Response):
+def set_homework_as_done(token: str, dateFrom: str, dateTo: str, homeworkId: str, response):
 	"""
 	Change l'état d'un devoir. (fait ou non fait)
 	
