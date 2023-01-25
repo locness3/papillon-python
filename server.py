@@ -314,7 +314,7 @@ def change_period(token: str, response: falcon.Response, periodName: str):
 
 
 @hug.get('/user')
-def user(token: str, response: falcon.Response) -> dict:
+def user(token: str, response: falcon.Response):
 	"""
 	Récupère les informations de l'utilisateur.
 	
@@ -586,7 +586,7 @@ def __transform_to_number(value:str)->float|int:
 
 
 @hug.get('/grades')
-def grades(token: str, response: falcon.Response) -> dict:
+def grades(token: str, response: falcon.Response):
 	"""
 	Récupère les notes de l'utilisateur.
 	
