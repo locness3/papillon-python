@@ -101,7 +101,7 @@ def get_client_on_instances(token: str, instances: list = INSTANCE_LIST):
 		try:
 			r = requests.post(f"http://{instance[0]}:8000/tokenGetClient", data={'token': token}, timeout=5)
 			if r.status_code == 200 and r.text != 'notfound' and r.text != 'expired':
-				decoded = base64.urlsafe_b64decode(json.loads(r.text)['data'])
+				decoded = base64.b64decode(json.loads(r.text)['data'])
 				client_dict = pickle.loads(decoded)
 				saved_clients[token] = client_dict
 				print(len(saved_clients), 'valid tokens')
@@ -122,7 +122,7 @@ def token_get_client(token: str, response):
 		client_dict = saved_clients[token]
 		
 		dump = pickle.dumps(client_dict, protocol=pickle.HIGHEST_PROTOCOL)
-		base64_dump = base64.urlsafe_b64encode(dump)
+		base64_dump = base64.b64encode(dump)
 		base64_dump += b'=' * (4 - len(base64_dump) % 4)
 
 		return {
