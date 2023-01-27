@@ -18,7 +18,7 @@ from pronotepy.ent import *
 API_VERSION = open('VERSION', 'r').read().strip()
 CAS_LIST = json.load(open('cas_list.json', 'r', encoding='utf8'))
 INSTANCE_LIST = [
-	("10.82.1.64", "Pronote-API-PYTHON-01"),
+	("api.pronote.plus", "Pronote-API-PYTHON-01"),
 	("10.82.1.63", "Pronote-API-PYTHON-02"),
 	("10.82.1.60", "Pronote-API-PYTHON-03")
 ]
@@ -99,10 +99,10 @@ def get_client_on_instances(token: str, instances: list = INSTANCE_LIST):
 			continue
 		print(f"Get token on {instance[1]}")
 		try:
-			r = requests.post(f"http://{instance[0]}:8000/tokenGetClient", data={'token': token}, timeout=5)
+			r = requests.post(f"http://{instance[0]}/tokenGetClient", data={'token': token}, timeout=5)
 			if r.status_code == 200 and r.text != 'notfound' and r.text != 'expired':
-				data = bytes(r.json()['data'], 'ASCII')
-				client_dict = pickle.loads(base64.b64decode(data))
+				decoded = base64.urlsafe_b64decode(json.loads(r.text)['data'])
+				client_dict = pickle.loads(decoded)
 				saved_clients[token] = client_dict
 				print(len(saved_clients), 'valid tokens')
 				return
@@ -122,11 +122,12 @@ def token_get_client(token: str, response):
 		client_dict = saved_clients[token]
 		
 		dump = pickle.dumps(client_dict, protocol=pickle.HIGHEST_PROTOCOL)
-		base64_dump = base64.b64encode(dump)
+		base64_dump = base64.urlsafe_b64encode(dump)
+		base64_dump += b'=' * (4 - len(base64_dump) % 4)
 
 		return {
 			'status': 'ok',
-			'data': str(base64_dump)
+			'data': base64_dump
 		}
 	else:
 		response.status = falcon.get_http_status(498)
