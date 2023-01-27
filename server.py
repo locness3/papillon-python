@@ -10,6 +10,7 @@ import json
 import socket
 import requests
 import pickle
+import base64
 
 # importe les ENT
 from pronotepy.ent import *
@@ -100,7 +101,8 @@ def get_client_on_instances(token: str, instances: list = INSTANCE_LIST):
 		try:
 			r = requests.post(f"http://{instance[0]}:8000/tokenGetClient", data={'token': token}, timeout=5)
 			if r.status_code == 200 and r.text != 'notfound' and r.text != 'expired':
-				client_dict = pickle.loads(bytes(r.text.data))
+				data = bytes(r.json()['data'], 'ASCII')
+				client_dict = pickle.loads(base64.b64decode(data))
 				saved_clients[token] = client_dict
 				print(len(saved_clients), 'valid tokens')
 				return
@@ -118,9 +120,13 @@ def token_get_client(token: str, response):
 	print(f"Get token by request: {status}, {token}")
 	if status == 'ok':
 		client_dict = saved_clients[token]
+		
+		dump = pickle.dumps(client_dict, protocol=pickle.HIGHEST_PROTOCOL)
+		base64_dump = base64.b64encode(dump)
+
 		return {
 			'status': 'ok',
-			'data': pickle.dumps(client_dict)
+			'data': str(base64_dump)
 		}
 	else:
 		response.status = falcon.get_http_status(498)
