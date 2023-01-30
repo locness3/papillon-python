@@ -21,13 +21,13 @@ pip3 install lxml
 
 ### Installation
 Une fois les pré-requis en place vous pouvez executer le serveur avec la commande suivante :
-Veuillez noter que le serveur est prévu pour fonctionner sur notre infrastructure, il est donc possible que vous deviez modifier le code pour qu'il fonctionne sur votre propre serveur. De plus, il est **nécessaire** de modifier le fichier `server.py` et de supprimer les fonctions `get_client_on_instances()` et `token_get_client()` ainsi que les appels à ces fonctions.
+Veuillez noter que le serveur est prévu pour fonctionner sur notre infrastructure, il est donc possible que vous deviez modifier le code pour qu'il fonctionne sur votre propre serveur. De plus, il est **nécessaire** de modifier le fichier `server.py` et de supprimer les fonctions `get_client_on_instances()` et `token_get_client()` ainsi que les appels à ces fonctions *(si présent dans la branche téléchargée)*.
 ```sh
 git clone -b master https://github.com/PapillonApp/papillon-python
 cd papillon-python
 python -m hug -f server.py
 ```
-Cela va lancer le serveur sur le port 8000.
+*Cela va lancer le serveur sur le port 8000.*
 
 ## Documentation
 ### Requêtes
