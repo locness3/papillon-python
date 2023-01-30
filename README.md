@@ -3,20 +3,34 @@
 ## Pourquoi faire ?
 Auparavant, [Papillon](https://github.com/ecnivtwelve/Papillon) utilisait [@Litarvan/pronote-api](https://github.com/Litarvan/pronote-api), mais cette API non maintenue depuis Avril 2021 commence à poser de plus en plus de problèmes à cause de son retard, et en plus est compliquée à héberger. Voila pourquoi je transitionne vers [@bain3/pronotepy](https://github.com/bain3/pronotepy), qui est encore maintenu et bien plus complet en fonctionnalités.
 
-Le but est de l'intégrer le plus vite possible dans [Papillon](https://github.com/ecnivtwelve/Papillon), et d'arrêter complètement l'ancien backend [node-pronote](https://github.com/ecnivtwelve/node-pronote) pour attribuer plus de ressources à papillon-python.
+Cela permet aussi à vous, utilisateurs et utilisatrices de Papillon, d'utiliser **votre propre serveur** afin de faire fonctionner notre application et ainsi **ne plus être dépendant** de notre infrastructure.
 
-## Roadmap
-- [x] Données de l'utilisateur
-- [x] Emploi du temps
-- [x] Travail à faire
-- [x] Notes
-- [x] Compétences
-- [x] Actualités
-- [x] Absences et retards
-- [x] Messagerie
-  - [x] Envoi de message
+> ⚠️ **Attention :** *Si vous décidez d'utiliser votre propre instance de notre API nous ne seront pas en mesure de vous aider et nous ne proposerons aucun support concernant l'utilisation de l'API et les problèmes qui pourrait vous arriver suite à votre propre gestion de cette dernière.*
 
-## Requêtes
+## Déploiement
+### Pré-requis
+
+Vous devez installer **Python 3.10 minimum** et **PiP**.<br/>
+Ensuite installer les dépendances avec les commandes suivantes :
+
+```sh
+pip3 install hug -U
+pip3 install pronotepy -U
+pip3 install lxml
+```
+
+### Installation
+Une fois les pré-requis en place vous pouvez executer le serveur avec la commande suivante :
+Veuillez noter que le serveur est prévu pour fonctionner sur notre infrastructure, il est donc possible que vous deviez modifier le code pour qu'il fonctionne sur votre propre serveur. De plus, il est **nécessaire** de modifier le fichier `server.py` et de supprimer les fonctions `get_client_on_instances()` et `token_get_client()` ainsi que les appels à ces fonctions.
+```sh
+git clone -b master https://github.com/PapillonApp/papillon-python
+cd papillon-python
+python -m hug -f server.py
+```
+Cela va lancer le serveur sur le port 8000.
+
+## Documentation
+### Requêtes
 Un client doit faire la requête initiale `POST /generatetoken` avec le body suivant :
 | Paramètre | Utilité | Exemple |
 |--|--|--|
