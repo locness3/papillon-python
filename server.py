@@ -18,7 +18,7 @@ from pronotepy.ent import *
 API_VERSION = open('VERSION', 'r').read().strip()
 CAS_LIST = json.load(open('cas_list.json', 'r', encoding='utf8'))
 INSTANCE_LIST = [
-	("10.82.1.64", "Pronote-API-PYTHON-01"),
+	("api.pronote.plus", "Pronote-API-PYTHON-01"),
 	("10.82.1.63", "Pronote-API-PYTHON-02"),
 	("10.82.1.60", "Pronote-API-PYTHON-03")
 ]
@@ -99,7 +99,7 @@ def get_client_on_instances(token: str, instances: list = INSTANCE_LIST):
 			continue
 		print(f"Get token on {instance[1]}")
 		try:
-			r = requests.post(f"http://{instance[0]}:8000/tokenGetClient", data={'token': token}, timeout=5)
+			r = requests.post(f"http://{instance[0]}/tokenGetClient", data={'token': token}, timeout=5)
 			if r.status_code == 200 and r.text != 'notfound' and r.text != 'expired':
 				decoded = base64.b64decode(json.loads(r.text)['data'])
 				client_dict = pickle.loads(decoded)
@@ -343,7 +343,7 @@ def user(token: str, response):
 			"address": list[str], 
 			"email": str,
 			"ine": str,
-			"profile_picture": str, 
+			"profile_picture": str|None, 
 			"delegue": bool, 
 			"periodes": list[dict] 
 		}
@@ -370,7 +370,7 @@ def user(token: str, response):
 				"email": client.info.email,
 				"address": client.info.address,
 				"ine": client.info.ine_number,
-				"profile_picture": client.info.profile_picture.url,
+				"profile_picture": client.info.profile_picture.url if client.info.profile_picture else None,
 				"delegue": client.info.delegue,
 				"periods": periods
 			}
