@@ -1547,7 +1547,7 @@ def set_homework_as_done(token: str, dateFrom: str, dateTo: str, homeworkId: str
 				if not changed:
 					response.status = falcon.get_http_status(404)
 					return {
-						"status": "error",
+						"status": "not found",
 						"error": "Aucun devoir trouvé avec cet ID."
 					}
 			except Exception as e:
