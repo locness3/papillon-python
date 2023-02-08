@@ -1,6 +1,6 @@
 [
     {
-      "name": "Pas d'ENT",
+      "name": "Aucun ENT",
       "url": "index-education.net",
       "py": ""
     },
@@ -114,6 +114,12 @@
       "name": "ÉCLAT-BFC",
       "url": "cas.eclat-bfc.fr",
       "py": "eclat_bfc",
+      "educonnect": true
+    },
+    {
+      "name": "ÉduConnect sans ENT",
+      "url": "hubeduconnect.index-education.net",
+      "py": "prn_educonnect",
       "educonnect": true
     },
     {
