@@ -632,6 +632,7 @@ def grades(token: str, response):
 				"min": __transform_to_number(__get_grade_state(average.min)),
 				"out_of": __transform_to_number(__get_grade_state(average.out_of)),
 				"significant": __get_grade_state(average.student, True),
+				"color": average.background_color if average.color != None else "#08BE88"
 			}
 
 			averagesData.append(averageData)
