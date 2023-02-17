@@ -94,7 +94,10 @@ def generate_token(response, body=None, method: hug.types.one_of(['url', 'qrcode
 			for rk in ('url', 'username', 'password', 'ent'):
 				if not rk in body and rk != 'ent':
 					response.status = falcon.get_http_status(400)
-					return f'missing{rk}'   
+					return {
+						"token": False,
+						"error": f'Missing {rk}'
+					}
 				elif not rk in body and rk == 'ent':
 					noENT = True 
 
@@ -118,11 +121,17 @@ def generate_token(response, body=None, method: hug.types.one_of(['url', 'qrcode
 			for rk in ('url', 'qrToken', 'login', 'checkCode'):
 				if not rk in body:
 					response.status = falcon.get_http_status(400)
-					return f'missing{rk}'
+					return {
+						"token": False,
+						"error": f'Missing {rk}'
+					}
 				elif rk == "checkCode":
 					if len(body["checkCode"]) != 4:
 						response.status = falcon.get_http_status(400)
-						return f'checkCode must be 4 characters long (got {len(body["checkCode"])})'
+						return {
+							"token": False,
+							"error": f'checkCode must be 4 characters long (got {len(body["checkCode"])})'
+						}
 
 			try:
 				client = pronotepy.Client.qrcode_login({
@@ -164,7 +173,7 @@ def generate_token(response, body=None, method: hug.types.one_of(['url', 'qrcode
 			response.status = falcon.get_http_status(498)
 			error = {
 				"token": False,
-				"error": "loginfailed",
+				"error": "Login failed",
 			}
 			return error
 	else:
