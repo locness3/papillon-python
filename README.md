@@ -1,4 +1,4 @@
-![image](https://user-images.githubusercontent.com/32978709/205500141-cf7be394-9929-4c2c-90a3-977cffc3f16f.png)
+![image](https://user-images.githubusercontent.com/32978709/227800196-4e32b637-0481-49d0-84e0-9d58e18454a0.png)
 
 ## Pourquoi faire ?
 Auparavant, [Papillon](https://github.com/ecnivtwelve/Papillon) utilisait [@Litarvan/pronote-api](https://github.com/Litarvan/pronote-api), mais cette API non maintenue depuis Avril 2021 commence à poser de plus en plus de problèmes à cause de son retard, et en plus est compliquée à héberger. Voila pourquoi je transitionne vers [@bain3/pronotepy](https://github.com/bain3/pronotepy), qui est encore maintenu et bien plus complet en fonctionnalités.
