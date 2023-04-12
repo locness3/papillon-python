@@ -402,6 +402,53 @@ def timetable(token: str, dateString: str, response):
 		response.status = falcon.get_http_status(498)
 		return success
 
+@hug.get('/content')
+def content(token: str, dateString: str, response):
+	"""
+	Récupère le contenu des cours.
+	
+	Args:
+		token (str): Le token du client Pronote
+		dateString (str): La date à récupérer sous la forme YYYY-MM-DD
+		response (falcon.Response): La réponse de la requête
+		
+	Returns:
+		list[dict]: Les contenus du cours 
+	"""
+	
+	dateToGet = datetime.datetime.strptime(dateString, "%Y-%m-%d").date()
+	success, client = get_client(token)
+
+	if success == 'ok':
+		if client.logged_in:
+			content = client.lessons(dateToGet, dateToGet)
+
+			contentData = []
+			for lesson in content:
+				if lesson.content != None:
+					for contentElement in lesson.content:
+						files = []
+						for file in contentElement.files:
+							files.append({
+								"id": file.id,
+								"name": file.name,
+								"url": file.url,
+								"type": file.type
+							})
+						
+						contentList = {
+							"title": contentElement.title
+							"description": contentElement.description
+							"category": contentElement.category
+							"files": files
+						}
+
+				contentData.append(lessonData)
+
+			return contentData
+	else:
+		response.status = falcon.get_http_status(498)
+		return success
 
 @hug.get('/homework')
 def homework(token: str, dateFrom: str, dateTo: str, response):
