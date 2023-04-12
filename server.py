@@ -437,9 +437,9 @@ def content(token: str, dateString: str, response):
 							})
 						
 						contentList = {
-							"title": contentElement.title
-							"description": contentElement.description
-							"category": contentElement.category
+							"title": contentElement.title,
+							"description": contentElement.description,
+							"category": contentElement.category,
 							"files": files
 						}
 
