@@ -220,6 +220,11 @@
       "py": "ent2d_bordeaux"
     },
     {
+      "name": "OZE Collège (Yvelines)",
+      "url": "ozecollege.yvelines.fr",
+      "py": "ozecollege_yvelines"
+    },
+    {
       "name": "Paris Classe Numérique",
       "url": "ent.parisclassenumerique.fr",
       "py": "paris_classe_numerique"
