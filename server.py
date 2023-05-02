@@ -443,7 +443,7 @@ def content(token: str, dateString: str, response):
 							"files": files
 						}
 
-				contentData.append(lessonData)
+				contentData.append(contentList)
 
 			return contentData
 	else:
