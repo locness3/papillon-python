@@ -9,6 +9,10 @@ import falcon
 import json
 import socket
 
+
+import resource
+resource.setrlimit(resource.RLIMIT_CORE, (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
+
 # importe les ENT
 from pronotepy.ent import *
 
