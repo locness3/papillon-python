@@ -235,6 +235,11 @@
       "py": "cas_kosmos"
     },
     {
+      "name": "Skolengo",
+      "url": "cas1.skolengo.com",
+      "py": "cas_kosmos"
+    },
+    {
       "name": "Webcollège",
       "url": "cas.webcollege.seinesaintdenis.fr",
       "py": "cas_seinesaintdenis_edu",
